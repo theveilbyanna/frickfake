@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FrickFake – Real people only. Get your number.</title>
+<meta name="description" content="Remember when the internet was just real people? FrickFake brings back the old-school messenger: your own number, a buddy list, statuses, and nobody can message you until you say yes. Verified humans only. Get your FrickFake number.">
+<meta property="og:title" content="FrickFake – Get your number">
+<meta property="og:description" content="The old-school messenger, rebuilt for real people only. Your own number, a buddy list, and no bots, scammers or catfish. Low numbers go first.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0d0c0b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230d0c0b'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Impact,Arial Black,sans-serif' font-size='38' fill='%23f3ece0'%3EF%3C/text%3E%3Cpath d='M10 40 L54 22' stroke='%23e5322b' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=Pixelify+Sans:wght@500;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Punk flyer page with late-90s messenger windows on top: black page, bone and putty-grey windows, red title bars. One column, the sign-up window near the top. */
+  --ink:#0d0c0b; --ink2:#1a1817; --line:#34302c;
+  --bone:#f3ece0; --muted:#b2a796; --red:#e5322b; --red-dark:#8f1712; --red-ink:#fff4ef;
+  --putty:#cdc6ba; --hi:#fffaf0; --lo:#6d665c; --shadow:#2b2724;
+  --on:#3fbf4a; --away:#f2b630; --dnd:#e5322b; --off:#8e877c;
+  --display:'Anton', Impact, 'Arial Narrow Bold', sans-serif;
+  --body:'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --pixel:'Pixelify Sans', 'Courier New', monospace;
+  --type:'Special Elite', 'Courier New', monospace;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ink);color:var(--bone);font-family:var(--body);font-size:17px;line-height:1.5;-webkit-text-size-adjust:100%}
+a{color:var(--bone)}
+:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+.wrap{max-width:620px;margin:0 auto;padding:0 20px}
+h1,h2,h3{text-wrap:balance;margin:0}
+
+.top{display:flex;justify-content:space-between;align-items:center;padding:18px 0 0;font-family:var(--type);font-size:13px;color:var(--muted);letter-spacing:.04em}
+.top .tag{border:1px dashed var(--muted);padding:4px 8px;transform:rotate(-2deg)}
+
+.hero{padding:24px 0 6px}
+.logo{font-family:var(--display);font-weight:400;text-transform:uppercase;line-height:.86;font-size:clamp(84px,27vw,168px);letter-spacing:.005em;margin:0}
+.logo span{display:block}
+.logo .fake{position:relative;width:max-content}
+.logo .fake::after{content:"";position:absolute;left:-4%;right:-4%;top:47%;height:.17em;background:var(--red);transform:rotate(-7deg);border-radius:4px;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.lede{font-size:clamp(22px,6vw,28px);font-weight:700;line-height:1.2;margin:22px 0 8px;max-width:24ch}
+.lede2{color:var(--muted);margin:0 0 14px;max-width:44ch}
+.nots{display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0;list-style:none}
+.nots li{font-family:var(--type);font-size:15px;padding:6px 10px;border:1px solid var(--line);background:var(--ink2)}
+.nots s{text-decoration-color:var(--red);text-decoration-thickness:3px}
+
+/* retro window */
+.win{background:var(--putty);color:var(--ink);border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);box-shadow:inset -2px -2px 0 var(--lo),inset 2px 2px 0 #e9e3d8,7px 7px 0 var(--red);padding:3px;margin:28px 0 10px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;background:linear-gradient(90deg,var(--red-dark),var(--red));color:var(--red-ink);padding:4px 4px 4px 8px;font-family:var(--pixel);font-weight:700;font-size:15px;letter-spacing:.02em}
+.bar .ttl{display:flex;align-items:center;gap:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .ttl i{width:10px;height:10px;border-radius:50%;background:var(--on);box-shadow:0 0 0 2px rgba(0,0,0,.25);flex:none}
+.bar .ctl{display:flex;gap:3px;flex:none}
+.bar .ctl span{width:20px;height:18px;background:var(--putty);color:var(--ink);font:700 12px/16px var(--pixel);text-align:center;border:1px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi)}
+.pane{padding:16px 14px 14px}
+.pane h2{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:32px;line-height:1;letter-spacing:.01em}
+.pane .sub{margin:6px 0 14px;font-size:15px;color:#3f3a34}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label{font-weight:700;font-size:14px}
+.field .opt{font-weight:500;color:#5e574e}
+.field input,.field textarea{width:100%;min-height:46px;padding:10px 11px;font:inherit;font-size:16px;color:var(--ink);background:#fffdf8;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);box-shadow:inset 1px 1px 0 var(--shadow);border-radius:0}
+.field textarea{min-height:80px;resize:vertical}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:15px;margin:4px 0 14px;cursor:pointer}
+.check input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--red);flex:none}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:10px 16px;background:var(--red);color:var(--red-ink);font-family:var(--pixel);font-weight:700;font-size:20px;letter-spacing:.02em;cursor:pointer;border:2px solid;border-color:#ff8a80 var(--red-dark) var(--red-dark) #ff8a80;box-shadow:1px 1px 0 var(--shadow);border-radius:0;text-decoration:none}
+.btn:active{border-color:var(--red-dark) #ff8a80 #ff8a80 var(--red-dark)}
+.btn:disabled{opacity:.6;cursor:default}
+.btn.grey{background:var(--putty);color:var(--ink);border-color:var(--hi) var(--shadow) var(--shadow) var(--hi)}
+.err{color:#a5140d;font-weight:700;font-size:14px;margin:0 0 10px}
+.privacy{font-size:13px;color:#4f4942;margin:12px 0 0}
+.status-line{display:flex;align-items:center;gap:8px;border-top:2px solid;border-color:var(--lo);margin:14px -14px -14px;padding:6px 10px;font-family:var(--pixel);font-size:14px;background:#c3bcaf;box-shadow:inset 0 1px 0 var(--hi)}
+.status-line i{width:10px;height:10px;border-radius:50%;background:var(--on);flex:none}
+
+.numbox{margin:14px 0 6px;text-align:center;background:#fffdf8;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);padding:14px 10px}
+.numbox small{display:block;font-family:var(--pixel);font-size:14px;color:#4f4942}
+.numbox b{display:block;font-family:var(--pixel);font-weight:700;font-size:clamp(46px,15vw,72px);line-height:1.05;letter-spacing:.04em;color:var(--ink)}
+.done .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.done .btn{font-size:18px}
+
+.count{font-family:var(--type);text-align:center;color:var(--muted);font-size:15px;margin:18px 0 0}
+.count b{color:var(--bone);font-family:var(--pixel);font-weight:700;font-size:22px}
+
+section{padding:36px 0 0}
+.kicker{font-family:var(--type);color:var(--red);font-size:14px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px}
+section > h2{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:clamp(36px,9vw,48px);line-height:.95;letter-spacing:.01em;margin-bottom:14px}
+.intro{color:var(--muted);margin:0 0 6px;max-width:46ch}
+
+/* buddy list mock */
+.buddy .pane{padding:8px 8px 10px;background:#fffdf8;margin:2px;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo)}
+.grp{font-family:var(--pixel);font-weight:700;font-size:14px;color:#3f3a34;padding:6px 4px 4px;display:flex;gap:6px;align-items:center}
+.grp::before{content:"▾";font-size:12px}
+.pal{display:flex;align-items:center;gap:9px;padding:6px 6px;font-size:15px}
+.pal i{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 0 2px rgba(0,0,0,.15)}
+.pal .nm{font-weight:700}
+.pal .st{color:#5e574e;font-size:13px;margin-left:auto;text-align:right}
+.ask{margin:4px 4px 2px;padding:9px 10px;background:#fbefe9;border:1px dashed var(--red);font-size:14px}
+.ask .acts{display:flex;gap:8px;margin-top:8px}
+.ask .acts span{flex:1;text-align:center;padding:6px 0;font-family:var(--pixel);font-weight:700;font-size:14px;border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);background:var(--putty)}
+.ask .acts span.yes{background:var(--on);color:#06210a}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--pixel);font-size:14px;color:var(--muted);margin:10px 0 0}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:50%}
+
+.feats{list-style:none;padding:0;margin:18px 0 0;display:flex;flex-direction:column;gap:10px}
+.feats li{padding:13px 14px;border:1px solid var(--line);background:var(--ink2)}
+.feats b{display:block;font-size:17px}
+.feats span{color:var(--muted);font-size:15px}
+
+.rules{font-family:var(--display);text-transform:uppercase;font-size:clamp(40px,12vw,64px);line-height:.95;margin:0}
+.rules span{display:block}
+.rules .r{color:var(--red)}
+.faq details{border-top:1px solid var(--line);padding:4px 0}
+.faq details:last-child{border-bottom:1px solid var(--line)}
+.faq summary{cursor:pointer;list-style:none;font-weight:700;padding:12px 30px 12px 0;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:2px;top:8px;font-family:var(--display);font-size:24px;color:var(--red)}
+.faq details[open] summary::after{content:"−"}
+.faq p{margin:0 0 14px;color:var(--muted)}
+.cta2{margin:30px 0 0}
+footer{padding:40px 0 34px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:6px}
+footer .brand{font-family:var(--display);font-size:22px;color:var(--bone);text-transform:uppercase;letter-spacing:.02em}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--putty);color:var(--ink);font-family:var(--pixel);font-weight:700;padding:10px 16px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);box-shadow:4px 4px 0 var(--red)}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><span>EST. 2026 · INLAND EMPIRE</span><span class="tag">COMING SOON</span></div>
+
+  <header class="hero">
+    <h1 class="logo" aria-label="FrickFake"><span>Frick</span><span class="fake">Fake</span></h1>
+    <p class="lede">Remember when the internet was just real people?</p>
+    <p class="lede2">FrickFake brings back the old-school messenger: your own number, a buddy list, away messages, and nobody can message you until you say yes. Verified humans only.</p>
+    <ul class="nots" aria-label="What you won't find here">
+      <li><s>bots</s></li><li><s>scammers</s></li><li><s>catfish</s></li><li><s>fake rich</s></li><li><s>ragebait</s></li>
+    </ul>
+  </header>
+
+  <div class="win" id="join">
+    <div class="bar"><span class="ttl"><i aria-hidden="true"></i>Get your number</span><span class="ctl" aria-hidden="true"><span>_</span><span>□</span><span>×</span></span></div>
+    <div class="pane">
+      <form id="form" novalidate>
+        <h2>Claim your number</h2>
+        <p class="sub">Every member gets a FrickFake number. The lower your number, the earlier you were here. The first 100 are founding members.</p>
+        <div class="field"><label for="name">First name or screen name</label><input id="name" name="name" autocomplete="nickname" maxlength="60" required></div>
+        <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required></div>
+        <div class="field"><label for="city">City <span class="opt">(optional)</span></label><input id="city" name="city" autocomplete="address-level2" maxlength="80"></div>
+        <div class="field"><label for="why">What made you quit fake social media? <span class="opt">(optional)</span></label><textarea id="why" name="why" maxlength="500"></textarea></div>
+        <div class="hp" aria-hidden="true"><label for="website">Leave this empty</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+        <label class="check" for="human"><input type="checkbox" id="human" name="human"><span>I’m a real human, and I’m cool with proving it when FrickFake opens.</span></label>
+        <p class="err" id="err" role="alert"></p>
+        <button class="btn" type="submit" id="submit">Get my number</button>
+        <p class="privacy">We’ll only email you about FrickFake. We never sell or share your info.</p>
+      </form>
+      <div class="done" id="done" hidden>
+        <h2 id="done-title">You’re in.</h2>
+        <div class="numbox"><small>Your FrickFake number</small><b id="num">#000000</b></div>
+        <p class="sub" id="done-sub">Screenshot it. When FrickFake opens, this number is yours, and we’ll email you before anyone else gets in.</p>
+        <p style="margin:0;font-weight:700">Now bring your real ones, before the low numbers are gone.</p>
+        <div class="row"><button class="btn" type="button" id="share">Share</button><button class="btn grey" type="button" id="copy">Copy link</button></div>
+      </div>
+      <div class="status-line"><i aria-hidden="true"></i><span id="count">Be one of the first 100 founding members.</span></div>
+    </div>
+  </div>
+
+  <section aria-labelledby="how">
+    <p class="kicker">The plan</p>
+    <h2 id="how">Like the old days. Minus the creeps.</h2>
+    <p class="intro">Here’s a peek at your buddy list.</p>
+    <div class="win buddy" aria-label="Example buddy list">
+      <div class="bar"><span class="ttl"><i aria-hidden="true"></i>#000013 · RealOnes</span><span class="ctl" aria-hidden="true"><span>_</span><span>×</span></span></div>
+      <div class="pane">
+        <div class="grp">Real Ones (3)</div>
+        <div class="pal"><i style="background:var(--on)"></i><span class="nm">PunkRockPam</span><span class="st">Free to chat</span></div>
+        <div class="pal"><i style="background:var(--away)"></i><span class="nm">NightOwlNate</span><span class="st">Away: walking the dogs</span></div>
+        <div class="pal"><i style="background:var(--dnd)"></i><span class="nm">GrandmaGlo</span><span class="st">Do not disturb: bingo</span></div>
+        <div class="grp">Offline (1)</div>
+        <div class="pal"><i style="background:var(--off)"></i><span class="nm">SkaterSue</span><span class="st">Last on 2h ago</span></div>
+        <div class="grp">Wants to add you (1)</div>
+        <div class="ask"><b>CosmicCarl #004217</b> wants to add you. Verified human. You both know PunkRockPam.<div class="acts"><span class="yes">Allow</span><span>Nope</span></div></div>
+      </div>
+    </div>
+    <div class="legend" aria-hidden="true"><span><i style="background:var(--on)"></i>Free to chat</span><span><i style="background:var(--away)"></i>Away</span><span><i style="background:var(--dnd)"></i>Do not disturb</span><span><i style="background:var(--off)"></i>Offline</span></div>
+    <ul class="feats">
+      <li><b>Your own number</b><span>Like the old days. Founding members get the lowest ones.</span></li>
+      <li><b>Nobody messages you until you say yes</b><span>Every add needs your OK. No stranger DMs, no scam messages.</span></li>
+      <li><b>Statuses and away messages</b><span>Free to chat, away, do not disturb, or invisible. You decide who sees you.</span></li>
+      <li><b>Find your people</b><span>Search verified members by interests and city to find your kind of weird.</span></li>
+      <li><b>Prove you’re human</b><span>A quick live check when you join. Bots don’t get past the door.</span></li>
+    </ul>
+  </section>
+
+  <section aria-label="House rules">
+    <p class="kicker">House rules</p>
+    <p class="rules"><span>Be real.</span><span>Stay humble.</span><span class="r">Frick fake.</span></p>
+  </section>
+
+  <section aria-labelledby="faq">
+    <p class="kicker">Questions</p>
+    <h2 id="faq">Fair questions</h2>
+    <div class="faq">
+      <details><summary>When does it open?</summary><p>When enough real people have a number. Founding members get in first and help shape the rules.</p></details>
+      <details><summary>What’s my number for?</summary><p>It’s your FrickFake ID, like the old messengers. People can add you by your number or your screen name, and a low number shows you were here early.</p></details>
+      <details><summary>Why “Frick”?</summary><p>Because app stores don’t love the other word. You know what we mean.</p></details>
+      <details><summary>How do you know I’m real?</summary><p>A quick live check when you join, plus the rule that nobody can add you without your OK. No bots, no fake profiles, no scam accounts.</p></details>
+      <details><summary>Who’s it for?</summary><p>Anyone who misses when the internet felt like real people. Punks, freaks, weirdos, parents, grandmas. If you’re real, you’re in.</p></details>
+      <details><summary>What do you do with my email?</summary><p>We email you when FrickFake opens, and that’s it. We never sell or share it.</p></details>
+    </div>
+    <div class="cta2"><a class="btn" href="#join">Get my number</a></div>
+  </section>
+
+  <footer>
+    <span class="brand">FrickFake</span>
+    <span>Real people only. A Digital Outlaw project.</span>
+    <span>© 2026 FrickFake</span>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+  var params = new URLSearchParams(location.search);
+  var ref = (params.get('ref') || '').replace(/[^\w-]/g, '').slice(0, 40);
+  var shareUrl = location.origin + '/';
+  var myNum = null;
+  var tt;
+  function toast(m){ var t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(function(){ t.classList.remove('show'); }, 1800); }
+  function pad(n){ return '#' + String(n).padStart(6, '0'); }
+
+  function showCount(n){
+    var el = $('count');
+    if (typeof n === 'number' && n >= 25) el.textContent = n.toLocaleString('en-US') + ' real humans have a number';
+    else if (typeof n === 'number' && n < 100) el.textContent = 'Be one of the first 100 founding members.';
+  }
+  function loadCount(){ fetch('/api/count').then(function(r){ return r.json(); }).then(function(d){ showCount(d && d.count); }).catch(function(){}); }
+  loadCount();
+
+  $('form').addEventListener('submit', function(e){
+    e.preventDefault();
+    var err = $('err'); err.textContent = '';
+    var name = $('name').value.trim(), email = $('email').value.trim();
+    if (!name) { err.textContent = 'Add your first name or screen name.'; $('name').focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { err.textContent = 'That email doesn’t look right. Check it and try again.'; $('email').focus(); return; }
+    if (!$('human').checked) { err.textContent = 'Check the box to confirm you’re a real human.'; return; }
+    var btn = $('submit'); btn.disabled = true; btn.textContent = 'Getting your number…';
+    fetch('/api/join', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, email: email, city: $('city').value.trim(), why: $('why').value.trim(), human: true, website: $('website').value, ref: ref })
+    }).then(function(r){ return r.json().then(function(d){ return { ok: r.ok, d: d }; }); })
+    .then(function(x){
+      if (!x.ok || !x.d.ok) throw new Error((x.d && x.d.error) || 'Something went wrong. Try again.');
+      myNum = x.d.number || null;
+      $('form').hidden = true; $('done').hidden = false;
+      $('done-title').textContent = (x.d.already ? 'Welcome back, ' : 'You’re in, ') + name + '.';
+      $('num').textContent = myNum ? pad(myNum) : 'Saved';
+      $('join').scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      loadCount();
+    })
+    .catch(function(ex){ err.textContent = ex.message || 'Something went wrong. Try again.'; btn.disabled = false; btn.textContent = 'Get my number'; });
+  });
+
+  function shareText(){ return (myNum ? 'I just got FrickFake ' + pad(myNum) + '. ' : '') + 'The old-school messenger is back, for real people only. No bots, no scammers, no catfish. Grab a low number:'; }
+  $('share').addEventListener('click', function(){
+    if (navigator.share) { navigator.share({ title: 'FrickFake', text: shareText(), url: shareUrl }).catch(function(){}); }
+    else copy();
+  });
+  function copy(){
+    var text = shareText() + ' ' + shareUrl;
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function(){ toast('Copied'); }, function(){ toast(shareUrl); });
+    else toast(shareUrl);
+  }
+  $('copy').addEventListener('click', copy);
+})();
+</script>
+</body>
+</html>
