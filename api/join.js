@@ -4,13 +4,26 @@ import { createHash } from 'node:crypto';
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/;
 const clean = (v, n) => String(v ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, n);
 
+// Works with a private Blob store (preferred) or a public one.
 async function readRecord(pathname) {
+  for (const access of ['private', 'public']) {
+    try {
+      const r = await get(pathname, { access, useCache: false });
+      if (r && r.stream) return JSON.parse(await new Response(r.stream).text());
+      if (r === null) return null;
+    } catch { /* try the other access type */ }
+  }
+  return null;
+}
+
+async function save(pathname, data) {
+  const opts = { contentType: 'application/json', addRandomSuffix: false, allowOverwrite: false };
   try {
-    const r = await get(pathname, { access: 'private', useCache: false });
-    if (!r || !r.stream) return null;
-    return JSON.parse(await new Response(r.stream).text());
-  } catch {
-    return null;
+    return await put(pathname, data, { ...opts, access: 'private' });
+  } catch (e) {
+    const msg = String((e && e.message) || '');
+    if (/already exists/i.test(msg)) throw e;
+    return await put(pathname, data, { ...opts, access: 'public' });
   }
 }
 
@@ -43,7 +56,7 @@ export default async function handler(req, res) {
   if (!EMAIL_RE.test(email)) return res.status(400).json({ ok: false, error: 'That email doesn’t look right. Check it and try again.' });
   if (body.human !== true) return res.status(400).json({ ok: false, error: 'Check the box to confirm you’re a real human.' });
 
-  const salt = process.env.ADMIN_KEY || 'frickfake';
+  const salt = 'ff-2026-real-humans-only';
   const id = createHash('sha256').update(salt + ':' + email).digest('hex').slice(0, 32);
   const pathname = `signups/${id}.json`;
 
@@ -65,12 +78,7 @@ export default async function handler(req, res) {
   };
 
   try {
-    await put(pathname, JSON.stringify(record), {
-      access: 'private',
-      contentType: 'application/json',
-      addRandomSuffix: false,
-      allowOverwrite: false
-    });
+    await save(pathname, JSON.stringify(record));
   } catch (e) {
     const msg = String((e && e.message) || '');
     if (/already exists/i.test(msg)) {

@@ -1,13 +1,17 @@
 import { list, get } from '@vercel/blob';
-import { timingSafeEqual } from 'node:crypto';
+import { timingSafeEqual, createHash } from 'node:crypto';
+
+// Only the SHA-256 of the admin key is stored here; the key itself stays private.
+const ADMIN_KEY_SHA256 = '049e2ae46c9c007df49a21f695ba0289026e3c76d4840cfbe2dbb6ba8d7b2880';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const csvCell = s => '"' + String(s ?? '').replace(/"/g, '""') + '"';
 
-function sameKey(a, b) {
-  const A = Buffer.from(String(a || ''));
-  const B = Buffer.from(String(b || ''));
-  return A.length > 0 && A.length === B.length && timingSafeEqual(A, B);
+function keyOk(key) {
+  if (!key) return false;
+  const A = Buffer.from(createHash('sha256').update(String(key)).digest('hex'));
+  const B = Buffer.from(ADMIN_KEY_SHA256);
+  return A.length === B.length && timingSafeEqual(A, B);
 }
 
 async function readAll() {
@@ -22,8 +26,13 @@ async function readAll() {
   for (let i = 0; i < blobs.length; i += 20) {
     const batch = await Promise.all(blobs.slice(i, i + 20).map(async b => {
       try {
-        const g = await get(b.url, { access: 'private', useCache: false });
-        return g && g.stream ? JSON.parse(await new Response(g.stream).text()) : null;
+        for (const access of ['private', 'public']) {
+          try {
+            const g = await get(b.url, { access, useCache: false });
+            if (g && g.stream) return JSON.parse(await new Response(g.stream).text());
+          } catch { /* try the other access type */ }
+        }
+        return null;
       } catch { return null; }
     }));
     rows.push(...batch.filter(Boolean));
@@ -35,7 +44,7 @@ async function readAll() {
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-  if (!sameKey(req.query.key, process.env.ADMIN_KEY)) {
+  if (!keyOk(req.query.key)) {
     res.status(401).setHeader('Content-Type', 'text/plain; charset=utf-8');
     return res.send('Not allowed.');
   }
