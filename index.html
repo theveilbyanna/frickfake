@@ -39,6 +39,10 @@ h1,h2,h3{text-wrap:balance;margin:0}
 
 .top{display:flex;justify-content:space-between;align-items:center;padding:18px 0 0;font-family:var(--type);font-size:13px;color:var(--muted);letter-spacing:.04em}
 .top .tag{border:1px dashed var(--muted);padding:4px 8px;transform:rotate(-2deg)}
+.top a.tag{color:var(--bone);text-decoration:none;border-color:var(--bone)}
+.poster{margin:22px 0 6px}
+.poster img{display:block;width:100%;height:auto}
+.poster .pane{padding:2px}
 
 .hero{padding:24px 0 6px}
 .logo{font-family:var(--display);font-weight:400;text-transform:uppercase;line-height:.86;font-size:clamp(84px,27vw,168px);letter-spacing:.005em;margin:0}
@@ -134,7 +138,7 @@ footer .brand{font-family:var(--display);font-size:22px;color:var(--bone);text-t
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><span>EST. 2026 · INLAND EMPIRE</span><span class="tag">COMING SOON</span></div>
+  <div class="top"><span>EST. 2026 · INLAND EMPIRE</span><a class="tag" href="/app">MEMBERS: LOG IN →</a></div>
 
   <header class="hero">
     <h1 class="logo" aria-label="FrickFake"><span>Frick</span><span class="fake">Fake</span></h1>
@@ -156,7 +160,7 @@ footer .brand{font-family:var(--display);font-size:22px;color:var(--bone);text-t
         <div class="field"><label for="city">City <span class="opt">(optional)</span></label><input id="city" name="city" autocomplete="address-level2" maxlength="80"></div>
         <div class="field"><label for="why">What made you quit fake social media? <span class="opt">(optional)</span></label><textarea id="why" name="why" maxlength="500"></textarea></div>
         <div class="hp" aria-hidden="true"><label for="website">Leave this empty</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
-        <label class="check" for="human"><input type="checkbox" id="human" name="human"><span>I’m a real human, and I’m cool with proving it when FrickFake opens.</span></label>
+        <label class="check" for="human"><input type="checkbox" id="human" name="human"><span>I’m a real human, and I’m cool with proving it.</span></label>
         <p class="err" id="err" role="alert"></p>
         <button class="btn" type="submit" id="submit">Get my number</button>
         <p class="privacy">We’ll only email you about FrickFake. We never sell or share your info.</p>
@@ -164,7 +168,8 @@ footer .brand{font-family:var(--display);font-size:22px;color:var(--bone);text-t
       <div class="done" id="done" hidden>
         <h2 id="done-title">You’re in.</h2>
         <div class="numbox"><small>Your FrickFake number</small><b id="num">#000000</b></div>
-        <p class="sub" id="done-sub">Screenshot it. When FrickFake opens, this number is yours, and we’ll email you before anyone else gets in.</p>
+        <p class="sub" id="done-sub">Screenshot it. This number is yours. Set up your account now to lock it in and start adding your real ones.</p>
+        <a class="btn" id="setup" href="/app" style="margin:0 0 14px">Set up my account →</a>
         <p style="margin:0;font-weight:700">Now bring your real ones, before the low numbers are gone.</p>
         <div class="row"><button class="btn" type="button" id="share">Share</button><button class="btn grey" type="button" id="copy">Copy link</button></div>
       </div>
@@ -195,23 +200,27 @@ footer .brand{font-family:var(--display);font-size:22px;color:var(--bone);text-t
       <li><b>Nobody messages you until you say yes</b><span>Every add needs your OK. No stranger DMs, no scam messages.</span></li>
       <li><b>Statuses and away messages</b><span>Free to chat, away, do not disturb, or invisible. You decide who sees you.</span></li>
       <li><b>Find your people</b><span>Search verified members by interests and city to find your kind of weird.</span></li>
-      <li><b>Prove you’re human</b><span>A quick live check when you join. Bots don’t get past the door.</span></li>
+      <li><b>Prove you’re human</b><span>A real person checks every new member before they can add or message anyone. Bots don’t get past the door.</span></li>
     </ul>
   </section>
 
   <section aria-label="House rules">
     <p class="kicker">House rules</p>
     <p class="rules"><span>Be real.</span><span>Stay humble.</span><span class="r">Frick fake.</span></p>
+    <div class="win poster">
+      <div class="bar"><span class="ttl"><i aria-hidden="true"></i>built_by_hard_times.jpg</span><span class="ctl" aria-hidden="true"><span>_</span><span>□</span><span>×</span></span></div>
+      <div class="pane"><img src="/founder.jpg" width="900" height="963" loading="lazy" alt="FrickFake poster: Built by hard times, powered by pure grit. I don’t break, I rebuild. And I don’t need anybody’s approval to know my worth."></div>
+    </div>
   </section>
 
   <section aria-labelledby="faq">
     <p class="kicker">Questions</p>
     <h2 id="faq">Fair questions</h2>
     <div class="faq">
-      <details><summary>When does it open?</summary><p>When enough real people have a number. Founding members get in first and help shape the rules.</p></details>
+      <details><summary>When does it open?</summary><p>The doors are opening now. Grab your number, set up your account, and a real human verifies you. Founding members get in first and help shape the rules.</p></details>
       <details><summary>What’s my number for?</summary><p>It’s your FrickFake ID, like the old messengers. People can add you by your number or your screen name, and a low number shows you were here early.</p></details>
       <details><summary>Why “Frick”?</summary><p>Because app stores don’t love the other word. You know what we mean.</p></details>
-      <details><summary>How do you know I’m real?</summary><p>A quick live check when you join, plus the rule that nobody can add you without your OK. No bots, no fake profiles, no scam accounts.</p></details>
+      <details><summary>How do you know I’m real?</summary><p>A real person checks every new member before they can add or message anyone, plus the rule that nobody can add you without your OK. No bots, no fake profiles, no scam accounts.</p></details>
       <details><summary>Who’s it for?</summary><p>Anyone who misses when the internet felt like real people. Punks, freaks, weirdos, parents, grandmas. If you’re real, you’re in.</p></details>
       <details><summary>What do you do with my email?</summary><p>We email you when FrickFake opens, and that’s it. We never sell or share it.</p></details>
     </div>
@@ -264,6 +273,7 @@ footer .brand{font-family:var(--display);font-size:22px;color:var(--bone);text-t
       $('form').hidden = true; $('done').hidden = false;
       $('done-title').textContent = (x.d.already ? 'Welcome back, ' : 'You’re in, ') + name + '.';
       $('num').textContent = myNum ? pad(myNum) : 'Saved';
+      $('setup').href = '/app?email=' + encodeURIComponent(email) + '&name=' + encodeURIComponent(name.replace(/[^A-Za-z0-9_.-]/g, '').slice(0, 20));
       $('join').scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
       loadCount();
     })

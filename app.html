@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FrickFake</title>
+<meta name="description" content="FrickFake: the old-school messenger for real people only. Your own number, a buddy list, away messages, and nobody can message you until you say yes.">
+<meta name="theme-color" content="#0d0c0b">
+<meta name="robots" content="noindex">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=Pixelify+Sans:wght@500;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d0c0b; --ink2:#1a1817; --line:#34302c;
+  --bone:#f3ece0; --muted:#b2a796; --red:#e5322b; --red-dark:#8f1712; --red-ink:#fff4ef;
+  --putty:#cdc6ba; --hi:#fffaf0; --lo:#6d665c; --shadow:#2b2724; --paper:#fffdf8; --text2:#4f4942;
+  --on:#3fbf4a; --away:#f2b630; --dnd:#e5322b; --off:#8e877c; --invisible:#8e877c;
+  --display:'Anton', Impact, 'Arial Narrow Bold', sans-serif;
+  --body:'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --pixel:'Pixelify Sans', 'Courier New', monospace;
+  --type:'Special Elite', 'Courier New', monospace;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ink);color:var(--bone);font-family:var(--body);font-size:17px;line-height:1.45;-webkit-text-size-adjust:100%}
+body.locked{overflow:hidden}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+[hidden]{display:none!important}
+.app{max-width:560px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+.appbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px calc(10px) ;padding-top:calc(10px + env(safe-area-inset-top));background:var(--ink);border-bottom:1px solid var(--line)}
+.brand{font-family:var(--display);text-transform:uppercase;font-size:28px;line-height:1;letter-spacing:.01em;display:flex;gap:6px;text-decoration:none}
+.brand .fake{position:relative}
+.brand .fake::after{content:"";position:absolute;left:-6%;right:-6%;top:46%;height:.17em;background:var(--red);transform:rotate(-8deg);border-radius:3px}
+.mechip{display:flex;align-items:center;gap:7px;font-family:var(--pixel);font-weight:700;font-size:15px;color:var(--bone);background:none;border:1px solid var(--line);padding:5px 9px;cursor:pointer}
+.dot{width:11px;height:11px;border-radius:50%;flex:none;display:inline-block;box-shadow:0 0 0 2px rgba(0,0,0,.2);background:var(--off)}
+.dot.free{background:var(--on)}.dot.away{background:var(--away)}.dot.dnd{background:var(--dnd)}.dot.offline,.dot.invisible{background:var(--off)}
+main{flex:1;padding:14px 12px calc(96px + env(safe-area-inset-bottom))}
+main.notabs{padding-bottom:40px}
+
+/* retro windows */
+.win{background:var(--putty);color:var(--ink);border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);box-shadow:inset -2px -2px 0 var(--lo),inset 2px 2px 0 #e9e3d8,6px 6px 0 var(--red);padding:3px;margin:6px 0 22px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;background:linear-gradient(90deg,var(--red-dark),var(--red));color:var(--red-ink);padding:4px 4px 4px 8px;font-family:var(--pixel);font-weight:700;font-size:15px;letter-spacing:.02em;min-height:28px}
+.bar .ttl{display:flex;align-items:center;gap:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .ctl{display:flex;gap:3px;flex:none}
+.bar .ctl span{width:20px;height:18px;background:var(--putty);color:var(--ink);font:700 12px/16px var(--pixel);text-align:center;border:1px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi)}
+.pane{padding:14px 12px 12px}
+.pane.paper{background:var(--paper);margin:2px;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo)}
+.pane h2{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:30px;line-height:1;letter-spacing:.01em;margin:0}
+.sub{margin:6px 0 14px;font-size:15px;color:#3f3a34}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label{font-weight:700;font-size:14px}
+.opt{font-weight:500;color:#5e574e}
+input:not([type=checkbox]),textarea,select{width:100%;min-height:46px;padding:10px 11px;font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);box-shadow:inset 1px 1px 0 var(--shadow);border-radius:0}
+textarea{min-height:84px;resize:vertical;line-height:1.4}
+select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 12px) 50%;background-size:6px 6px;background-repeat:no-repeat;padding-right:32px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:15px;margin:4px 0 14px;cursor:pointer}
+.check input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--red);flex:none}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;padding:8px 14px;background:var(--red);color:var(--red-ink);font-family:var(--pixel);font-weight:700;font-size:19px;letter-spacing:.02em;cursor:pointer;border:2px solid;border-color:#ff8a80 var(--red-dark) var(--red-dark) #ff8a80;box-shadow:1px 1px 0 var(--shadow);border-radius:0;text-decoration:none;text-align:center}
+.btn:active{border-color:var(--red-dark) #ff8a80 #ff8a80 var(--red-dark)}
+.btn:disabled{opacity:.6;cursor:default}
+.btn.grey{background:var(--putty);color:var(--ink);border-color:var(--hi) var(--shadow) var(--shadow) var(--hi)}
+.btn.green{background:var(--on);color:#06210a;border-color:#9be8a1 #1f6b26 #1f6b26 #9be8a1}
+.btn.small{width:auto;min-height:40px;font-size:16px;padding:6px 12px}
+.btn.ghost{background:transparent;color:var(--bone);border-color:var(--line)}
+.row{display:flex;gap:8px;align-items:stretch}
+.row > input,.row > select{flex:1;min-width:0}
+.row > .btn{width:auto;flex:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.err{color:#a5140d;font-weight:700;font-size:14px;margin:0 0 10px}
+.err:empty{display:none}
+.note{font-size:13px;color:var(--text2);margin:10px 0 0}
+.switch{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:-4px 0 14px;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo)}
+.switch button{min-height:42px;border:0;background:#c3bcaf;font-family:var(--pixel);font-weight:700;font-size:16px;cursor:pointer;color:var(--ink)}
+.switch button[aria-pressed=true]{background:var(--paper);color:var(--red)}
+
+.hero{padding:10px 2px 4px}
+.logo{font-family:var(--display);text-transform:uppercase;line-height:.86;font-size:clamp(70px,22vw,120px);margin:0}
+.logo span{display:block}
+.logo .fake{position:relative;width:max-content}
+.logo .fake::after{content:"";position:absolute;left:-4%;right:-4%;top:47%;height:.17em;background:var(--red);transform:rotate(-7deg);border-radius:4px}
+.tagline{font-weight:700;font-size:20px;line-height:1.25;margin:14px 0 4px}
+.muted{color:var(--muted)}
+.poster img{display:block;width:100%;height:auto}
+.poster .pane{padding:2px}
+
+.numbox{margin:12px 0 8px;text-align:center;background:var(--paper);border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);padding:12px 10px}
+.numbox small{display:block;font-family:var(--pixel);font-size:14px;color:var(--text2)}
+.numbox b{display:block;font-family:var(--pixel);font-weight:700;font-size:clamp(42px,14vw,64px);line-height:1.05;letter-spacing:.04em;color:var(--ink)}
+
+/* buddy list */
+.buddy .list{background:var(--paper);margin:10px -12px -12px;border-top:2px solid var(--lo);padding:4px 4px 10px}
+.grp{font-family:var(--pixel);font-weight:700;font-size:14px;color:#3f3a34;padding:8px 6px 4px;display:flex;gap:6px;align-items:center}
+.grp::before{content:"▾";font-size:12px}
+.pal{display:flex;align-items:center;gap:10px;width:100%;padding:9px 8px;font-size:16px;background:none;border:0;text-align:left;cursor:pointer;color:var(--ink);min-height:48px}
+.pal:hover,.pal:focus-visible{background:#f1ebe0}
+.pal .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pal .st{color:#5e574e;font-size:13px;margin-left:auto;text-align:right;max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--red);color:#fff;font:700 13px/1 var(--body);flex:none}
+.ask{margin:4px 6px 8px;padding:10px;background:#fbefe9;border:1px dashed var(--red);font-size:15px;color:var(--ink)}
+.ask .who{font-weight:700;background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px;color:var(--ink);font-size:16px}
+.ask .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.ask .btn{min-height:42px;font-size:16px}
+.empty{padding:10px 8px;color:#5e574e;font-size:15px}
+
+/* cards (feed, find) */
+.card{background:var(--paper);color:var(--ink);border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);padding:12px;margin:0 0 10px}
+.card .hd{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.card .nm{font-weight:700;background:none;border:0;padding:0;cursor:pointer;color:var(--ink);font-size:16px;text-decoration:underline;text-decoration-color:transparent}
+.card .nm:hover{text-decoration-color:currentColor}
+.num{font-family:var(--pixel);font-size:14px;color:#5e574e}
+.when{font-size:13px;color:#5e574e;margin-left:auto}
+.body{white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0 0;font-size:16px}
+.card .ft{display:flex;gap:8px;margin-top:10px;align-items:center}
+.real{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:4px 12px;background:var(--putty);border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);font-family:var(--pixel);font-weight:700;font-size:15px;cursor:pointer;color:var(--ink)}
+.real[aria-pressed=true]{background:var(--red);color:#fff;border-color:#ff8a80 var(--red-dark) var(--red-dark) #ff8a80}
+.linkbtn{background:none;border:0;color:#5e574e;font-size:14px;cursor:pointer;text-decoration:underline;padding:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-family:var(--type);font-size:13px;padding:3px 8px;border:1px solid #c9c1b4;background:#f6f1e8;color:var(--ink)}
+.section-title{font-family:var(--display);text-transform:uppercase;font-size:26px;margin:4px 2px 10px;letter-spacing:.01em}
+.counter{font-size:13px;color:var(--text2);text-align:right;margin:-6px 0 8px}
+details.more{background:var(--putty);color:var(--ink);border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);margin:0 0 12px}
+details.more summary{cursor:pointer;padding:12px;font-family:var(--pixel);font-weight:700;font-size:16px}
+details.more > div{padding:0 12px 12px}
+
+/* tabs */
+.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:560px;z-index:30;display:grid;grid-template-columns:repeat(4,1fr);background:var(--putty);border-top:2px solid var(--hi);box-shadow:0 -2px 0 var(--shadow);padding-bottom:env(safe-area-inset-bottom)}
+.tabs button{position:relative;min-height:60px;border:0;background:none;color:var(--ink);font-family:var(--pixel);font-weight:700;font-size:15px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.tabs button svg{width:24px;height:24px}
+.tabs button[aria-current=page]{color:var(--red);background:var(--paper);box-shadow:inset 2px 2px 0 var(--lo)}
+.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px)}
+
+/* chat + sheets */
+.overlay{position:fixed;inset:0;z-index:40;display:flex;justify-content:center;background:rgba(13,12,11,.6)}
+.chat{width:100%;max-width:560px;height:100%;display:flex;flex-direction:column;background:var(--putty);color:var(--ink)}
+.chat .top{display:flex;align-items:center;gap:8px;background:linear-gradient(90deg,var(--red-dark),var(--red));color:var(--red-ink);padding:8px 8px;padding-top:calc(8px + env(safe-area-inset-top))}
+.iconbtn{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;background:var(--putty);color:var(--ink);border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);font:700 20px/1 var(--pixel);cursor:pointer;flex:none}
+.chat .who{flex:1;min-width:0;background:none;border:0;color:inherit;text-align:left;cursor:pointer;padding:0}
+.chat .who b{display:block;font-family:var(--pixel);font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat .who span{display:flex;align-items:center;gap:6px;font-size:13px;opacity:.95}
+.awayline{background:#fff4d6;border-bottom:1px solid #e5cf8f;padding:7px 12px;font-size:14px;font-family:var(--type)}
+.msgs{flex:1;overflow-y:auto;background:var(--paper);margin:3px;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);padding:10px 10px 14px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.day{text-align:center;font-family:var(--pixel);font-size:13px;color:#7a7266;margin:12px 0 6px}
+.msg{display:flex;flex-direction:column;margin:3px 0;max-width:82%}
+.msg.me{margin-left:auto;align-items:flex-end}
+.msg .bub{padding:8px 11px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px;line-height:1.35;border:2px solid}
+.msg.them .bub{background:#ece6dc;border-color:#d8d0c3}
+.msg.me .bub{background:var(--red);color:#fff;border-color:var(--red-dark)}
+.msg .meta{font-size:11px;color:#7a7266;margin:2px 3px 0}
+.seen{font-size:12px;color:#7a7266;text-align:right;margin:2px 4px 0;font-family:var(--pixel)}
+.compose{display:flex;gap:6px;padding:6px 6px calc(6px + env(safe-area-inset-bottom));align-items:flex-end}
+.compose textarea{min-height:46px;max-height:140px;resize:none;flex:1}
+.compose .btn{width:auto;min-width:76px}
+.sheet{align-items:flex-end}
+.sheet .box{width:100%;max-width:560px;max-height:88vh;overflow:auto;background:var(--putty);color:var(--ink);border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);padding:3px 3px calc(10px + env(safe-area-inset-bottom))}
+.sheet .pane{padding:14px 12px 6px}
+.stack{display:flex;flex-direction:column;gap:8px}
+.kv{font-size:15px;margin:4px 0}
+.temp{font-family:var(--pixel);font-size:26px;text-align:center;background:var(--paper);padding:10px;border:2px dashed var(--red);margin:10px 0;user-select:all}
+
+.stats{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.stat{background:var(--ink2);border:1px solid var(--line);padding:8px 10px;min-width:96px}
+.stat b{display:block;font-family:var(--pixel);font-size:26px;color:var(--bone)}
+.stat span{font-size:13px;color:var(--muted)}
+.tag{display:inline-block;font-family:var(--pixel);font-size:12px;padding:1px 6px;border:1px solid currentColor;margin-left:6px}
+.tag.ok{color:#1f7a29}.tag.wait{color:#9a6a00}.tag.bad{color:#a5140d}
+.home{display:block;text-align:center;font-family:var(--type);color:var(--muted);font-size:14px;margin:6px 0 20px}
+.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--putty);color:var(--ink);font-family:var(--pixel);font-weight:700;padding:10px 16px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);box-shadow:4px 4px 0 var(--red);max-width:92vw;text-align:center}
+.toast.show{opacity:1}
+.spin{padding:40px 0;text-align:center;font-family:var(--pixel);color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="appbar">
+    <a class="brand" href="/" aria-label="FrickFake home"><span>Frick</span><span class="fake">Fake</span></a>
+    <button class="mechip" id="mechip" type="button" hidden><i class="dot" id="medot"></i><span id="menum"></span></button>
+  </header>
+  <main id="view"><p class="spin">Loading…</p></main>
+</div>
+<nav class="tabs" id="tabs" hidden aria-label="FrickFake">
+  <button type="button" data-tab="buddies"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16 14.6c2.8-.3 4.9 1.4 5.5 4.4"/></svg><span>Buddies</span><span class="badge" id="badge-buddies" hidden></span></button>
+  <button type="button" data-tab="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17"/><path d="M7.5 9h9M7.5 13h9M7.5 17h5"/></svg><span>Feed</span></button>
+  <button type="button" data-tab="find"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></svg><span>Find</span></button>
+  <button type="button" data-tab="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg><span>Me</span></button>
+</nav>
+<div class="overlay" id="chat" hidden></div>
+<div class="overlay sheet" id="sheet" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+var $ = function(id){ return document.getElementById(id); };
+var S = { me: undefined, tab: 'buddies', buddies: [], incoming: [], outgoing: [], chat: null, lastMsgId: 0, firstMsgId: 0, seenUpTo: 0, feedBefore: 0, unreadTotal: -1 };
+var STATUS = [['free','Free to chat'],['away','Away'],['dnd','Do not disturb'],['invisible','Invisible']];
+var LABEL = { free:'Free to chat', away:'Away', dnd:'Do not disturb', invisible:'Invisible', offline:'Offline' };
+var timer = null, fid = 0, AC = null;
+
+// ---------- helpers ----------
+function h(tag, a){
+  var el = document.createElement(tag);
+  if (a) for (var k in a) {
+    var v = a[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k === 'text') el.textContent = v;
+    else if (k === 'value') el.value = v;
+    else if (k.slice(0,2) === 'on' && typeof v === 'function') el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (var i = 2; i < arguments.length; i++) add(el, arguments[i]);
+  return el;
+}
+function add(el, c){
+  if (c == null || c === false) return;
+  if (Array.isArray(c)) { c.forEach(function(x){ add(el, x); }); return; }
+  el.append(c instanceof Node ? c : document.createTextNode(String(c)));
+}
+function num(n){ return '#' + String(n || 0).padStart(6, '0'); }
+function view(node, opts){ var v = $('view'); v.className = opts && opts.notabs ? 'notabs' : ''; v.replaceChildren(node); }
+function win(title, body, o){
+  o = o || {};
+  return h('div', { class: 'win ' + (o.cls || '') },
+    h('div', { class: 'bar' }, h('span', { class: 'ttl' }, o.dot ? h('i', { class: 'dot ' + o.dot, 'aria-hidden': 'true' }) : null, title),
+      h('span', { class: 'ctl', 'aria-hidden': 'true' }, h('span', null, '_'), h('span', null, '×'))),
+    h('div', { class: 'pane' + (o.paper ? ' paper' : '') }, body));
+}
+function field(label, input, optional, hint){
+  var id = 'f' + (++fid); input.id = id;
+  return h('div', { class: 'field' }, h('label', { for: id }, label, optional ? h('span', { class: 'opt' }, ' (optional)') : null), input, hint ? h('span', { class: 'opt', style: 'font-size:13px' }, hint) : null);
+}
+function checkbox(input, text){ var id = 'f' + (++fid); input.id = id; return h('label', { class: 'check', for: id }, input, h('span', null, text)); }
+var tt;
+function toast(m){ var t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(function(){ t.classList.remove('show'); }, 2400); }
+function ago(t){
+  if (!t) return '';
+  var s = (Date.now() - new Date(t).getTime()) / 1000;
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s / 60) + 'm ago';
+  if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+  if (s < 604800) return Math.floor(s / 86400) + 'd ago';
+  return new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+function clock(t){ return new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+function dayLabel(t){
+  var d = new Date(t), now = new Date();
+  var y = new Date(now); y.setDate(now.getDate() - 1);
+  if (d.toDateString() === now.toDateString()) return 'Today';
+  if (d.toDateString() === y.toDateString()) return 'Yesterday';
+  return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+}
+function store(k, v){ try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } }
+async function busy(btn, label, fn){
+  var old = btn.textContent; btn.disabled = true; btn.textContent = label;
+  try { return await fn(); } finally { btn.disabled = false; btn.textContent = old; }
+}
+function beep(){
+  try {
+    if (!AC) return;
+    var o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+    o.type = 'square'; o.frequency.setValueAtTime(880, t); o.frequency.setValueAtTime(660, t + .09);
+    g.gain.setValueAtTime(.04, t); g.gain.exponentialRampToValueAtTime(.0001, t + .22);
+    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + .23);
+  } catch (e) {}
+}
+document.addEventListener('pointerdown', function(){ if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }, { once: true });
+
+async function api(action, data){
+  var payload = Object.assign({ action: action }, data || {});
+  var r, j;
+  try {
+    r = await fetch('/api/app', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(payload) });
+    j = await r.json();
+  } catch (e) { j = { ok: false, code: 'net', error: 'Can’t reach FrickFake. Check your connection.' }; }
+  if (!j.ok) {
+    var err = new Error(j.error || 'Something went wrong. Try again.'); err.code = j.code;
+    if ((j.code === 'auth' || j.code === 'banned') && action !== 'me' && location.hash !== '#boss') { S.me = null; viewAuth('login', j.code === 'banned' ? j.error : 'You’ve been logged out. Log in again.'); }
+    throw err;
+  }
+  return j;
+}
+
+// ---------- overlays (chat, sheets) close with the phone's back button ----------
+// One extra history entry ("guard") stays while anything is open, so Android's back button closes the top layer.
+var stack = [], guard = false, ignorePop = false;
+function pushOverlay(close){
+  stack.push(close);
+  if (!guard) { guard = true; try { history.pushState({ ff: 1 }, ''); } catch (e) {} }
+}
+function dropGuard(){ if (guard) { guard = false; ignorePop = true; try { history.back(); } catch (e) { ignorePop = false; } } }
+function back(){ var c = stack.pop(); if (c) c(); if (!stack.length) dropGuard(); }
+window.addEventListener('popstate', function(){
+  if (ignorePop) { ignorePop = false; return; }
+  if (!guard) return;
+  guard = false;
+  var c = stack.pop(); if (c) c();
+  if (stack.length) { guard = true; try { history.pushState({ ff: 1 }, ''); } catch (e) {} }
+});
+function lockBody(){ document.body.classList.toggle('locked', !$('chat').hidden || !$('sheet').hidden); }
+function sheet(title, body){
+  var s = $('sheet');
+  var box = h('div', { class: 'box', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
+    h('div', { class: 'bar' }, h('span', { class: 'ttl' }, title), h('button', { class: 'iconbtn', type: 'button', style: 'min-width:36px;min-height:30px;font-size:15px', 'aria-label': 'Close', onclick: back }, '×')),
+    h('div', { class: 'pane' }, body));
+  s.replaceChildren(box);
+  s.onclick = function(e){ if (e.target === s) back(); };
+  if (s.hidden) { s.hidden = false; pushOverlay(function(){ s.hidden = true; s.replaceChildren(); lockBody(); }); }
+  lockBody();
+  var f = box.querySelector('input,textarea,button.btn'); if (f && f.tagName !== 'BUTTON') f.focus();
+}
+function confirmSheet(title, text, okLabel, danger){
+  return new Promise(function(resolve){
+    var done = false;
+    function finish(v){ if (done) return; done = true; resolve(v); back(); }
+    sheet(title, h('div', { class: 'stack' }, h('p', { class: 'sub', style: 'margin-top:0' }, text),
+      h('button', { class: 'btn' + (danger ? '' : ' green'), type: 'button', onclick: function(){ finish(true); } }, okLabel),
+      h('button', { class: 'btn grey', type: 'button', onclick: function(){ finish(false); } }, 'Cancel')));
+    var s = stack[stack.length - 1];
+    stack[stack.length - 1] = function(){ s(); if (!done) { done = true; resolve(false); } };
+  });
+}
+
+// ---------- polling ----------
+function stopPoll(){ clearTimeout(timer); timer = null; }
+function schedule(){
+  stopPoll();
+  if (!S.me || document.hidden || location.hash === '#boss') return;
+  timer = setTimeout(poll, !S.me.verified ? 30000 : (S.chat ? 3500 : 10000));
+}
+async function poll(){
+  stopPoll();
+  if (!S.me) return;
+  var chatId = S.chat && S.chat.id;
+  try {
+    var r = await api('poll', chatId ? { chat: chatId, after: S.lastMsgId } : {});
+    var wasVerified = S.me && S.me.verified;
+    S.me = r.me; updateMeChip();
+    if (!r.me.verified) { if (wasVerified) viewPending(); }
+    else {
+      if (!wasVerified) { toast('You’re verified! Welcome to FrickFake.'); beep(); viewMain(); }
+      S.buddies = r.buddies || []; S.incoming = r.incoming || []; S.outgoing = r.outgoing || [];
+      var unread = S.buddies.reduce(function(n, b){ return n + (b.id === chatId ? 0 : b.unread); }, 0);
+      if (S.unreadTotal >= 0 && unread + S.incoming.length > S.unreadTotal) beep();
+      S.unreadTotal = unread + S.incoming.length;
+      setBadge(S.unreadTotal);
+      if (S.tab === 'buddies') renderBuddyList();
+      if (S.chat && S.chat.id === chatId) {
+        var fresh = (r.messages || []).filter(function(m){ return m.id > S.lastMsgId; });
+        if (fresh.some(function(m){ return m.from_id !== S.me.id; })) beep();
+        appendMsgs(fresh);
+        if (typeof r.seen_up_to === 'number') { S.seenUpTo = r.seen_up_to; markSeen(); }
+        var b = S.buddies.find(function(x){ return x.id === chatId; });
+        if (b) updateChatHeader(b);
+      }
+    }
+  } catch (e) { if (e.code === 'auth' || e.code === 'banned') return; }
+  schedule();
+}
+document.addEventListener('visibilitychange', function(){ if (!document.hidden && S.me) poll(); else stopPoll(); });
+function setBadge(n){
+  var b = $('badge-buddies');
+  b.hidden = !n; b.textContent = n > 99 ? '99+' : String(n);
+  document.title = n ? '(' + n + ') FrickFake' : 'FrickFake';
+}
+function updateMeChip(){
+  var c = $('mechip');
+  if (!S.me) { c.hidden = true; return; }
+  c.hidden = false;
+  $('medot').className = 'dot ' + (S.me.verified ? S.me.status : 'offline');
+  $('menum').textContent = num(S.me.number);
+}
+$('mechip').addEventListener('click', function(){ if (S.me && S.me.verified) showTab('me'); });
+
+// ---------- sign up / log in ----------
+function viewAuth(mode, msg){
+  stopPoll(); closeAll(); setTabs(false); S.me = null; S.tab = 'buddies'; updateMeChip(); setBadge(0);
+  var q = new URLSearchParams(location.search);
+  var isNew = mode !== 'login';
+  var err = h('p', { class: 'err', role: 'alert' }, msg || '');
+  var form;
+  var showPw = h('input', { type: 'checkbox' });
+  if (isNew) {
+    var sn = h('input', { autocomplete: 'username', maxlength: '20', autocapitalize: 'off', spellcheck: 'false', value: (q.get('name') || '').replace(/[^A-Za-z0-9_.-]/g, '').slice(0, 20) });
+    var em = h('input', { type: 'email', inputmode: 'email', autocomplete: 'email', maxlength: '254', value: q.get('email') || '' });
+    var pw = h('input', { type: 'password', autocomplete: 'new-password', maxlength: '200' });
+    var city = h('input', { autocomplete: 'address-level2', maxlength: '80' });
+    var ints = h('input', { maxlength: '200', placeholder: 'punk, tarot, dogs, skating' });
+    var hp = h('input', { tabindex: '-1', autocomplete: 'off' });
+    var human = h('input', { type: 'checkbox' });
+    var btn = h('button', { class: 'btn', type: 'submit' }, 'Get in');
+    showPw.addEventListener('change', function(){ pw.type = showPw.checked ? 'text' : 'password'; });
+    form = h('form', { novalidate: true, onsubmit: function(e){
+        e.preventDefault(); err.textContent = '';
+        var s = sn.value.trim(), m = em.value.trim();
+        if (!/^[A-Za-z0-9_.-]{3,20}$/.test(s) || !/[A-Za-z]/.test(s)) { err.textContent = 'Screen names are 3 to 20 letters, numbers, dots, dashes or underscores.'; sn.focus(); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m)) { err.textContent = 'That email doesn’t look right.'; em.focus(); return; }
+        if (pw.value.length < 8) { err.textContent = 'Make your password at least 8 characters.'; pw.focus(); return; }
+        if (!human.checked) { err.textContent = 'Check the box to confirm you’re a real human.'; return; }
+        busy(btn, 'Getting your number…', async function(){
+          try {
+            var r = await api('signup', { screen_name: s, email: m, password: pw.value, city: city.value, interests: ints.value, human: true, website: hp.value });
+            store('ff_known', '1'); S.me = r.me;
+            if (history.replaceState) history.replaceState(null, '', '/app');
+            toast(r.kept_number ? 'You kept your number ' + num(r.me.number) + '!' : 'Your number is ' + num(r.me.number) + '!');
+            start();
+          } catch (ex) { err.textContent = ex.message; }
+        });
+      } },
+      h('h2', null, 'Get your number'),
+      h('p', { class: 'sub' }, 'Got a number on the waitlist already? Use the same email and it’s yours.'),
+      field('Screen name', sn, false, 'This is what your buddies see. You can change it later.'),
+      field('Email', em),
+      field('Password', pw, false, 'At least 8 characters.'),
+      checkbox(showPw, 'Show password'),
+      field('City', city, true),
+      field('Interests', ints, true, 'Helps your kind of weird find you.'),
+      h('div', { class: 'hp', 'aria-hidden': 'true' }, field('Leave this empty', hp)),
+      checkbox(human, 'I’m a real human, and I’m cool with a real person checking before I can add anyone.'),
+      err, btn,
+      h('p', { class: 'note' }, 'We never sell or share your info.'));
+  } else {
+    var lg = h('input', { autocomplete: 'username', autocapitalize: 'off', spellcheck: 'false', maxlength: '254', value: q.get('email') || '' });
+    var lpw = h('input', { type: 'password', autocomplete: 'current-password', maxlength: '200' });
+    var lbtn = h('button', { class: 'btn', type: 'submit' }, 'Log in');
+    showPw.addEventListener('change', function(){ lpw.type = showPw.checked ? 'text' : 'password'; });
+    form = h('form', { novalidate: true, onsubmit: function(e){
+        e.preventDefault(); err.textContent = '';
+        if (!lg.value.trim() || !lpw.value) { err.textContent = 'Enter your login and password.'; return; }
+        busy(lbtn, 'Logging in…', async function(){
+          try { var r = await api('login', { login: lg.value.trim(), password: lpw.value }); store('ff_known', '1'); S.me = r.me; start(); }
+          catch (ex) { err.textContent = ex.message; }
+        });
+      } },
+      h('h2', null, 'Welcome back'),
+      h('p', { class: 'sub' }, 'Log in with your email, screen name, or FrickFake number.'),
+      field('Email, screen name or number', lg),
+      field('Password', lpw),
+      checkbox(showPw, 'Show password'),
+      err, lbtn,
+      h('p', { class: 'note' }, 'Forgot your password? Message FrickFake on social and a real human will reset it for you.'));
+  }
+  var sw = h('div', { class: 'switch', role: 'group', 'aria-label': 'Sign up or log in' },
+    h('button', { type: 'button', 'aria-pressed': String(isNew), onclick: function(){ viewAuth('new'); } }, 'I’m new'),
+    h('button', { type: 'button', 'aria-pressed': String(!isNew), onclick: function(){ viewAuth('login'); } }, 'Log in'));
+  view(h('div', null,
+    h('div', { class: 'hero' }, h('h1', { class: 'logo', 'aria-label': 'FrickFake' }, h('span', null, 'Frick'), h('span', { class: 'fake' }, 'Fake')),
+      h('p', { class: 'tagline' }, 'Real people only.'), h('p', { class: 'muted', style: 'margin:0 0 6px' }, 'Your own number, a buddy list, away messages, and nobody can message you until you say yes.')),
+    win(isNew ? 'New here' : 'Log in', [sw, form]),
+    h('div', { class: 'win poster' }, h('div', { class: 'bar' }, h('span', { class: 'ttl' }, 'built_by_hard_times.jpg'), h('span', { class: 'ctl', 'aria-hidden': 'true' }, h('span', null, '_'), h('span', null, '×'))),
+      h('div', { class: 'pane' }, h('img', { src: '/founder.jpg', width: '900', height: '963', loading: 'lazy', alt: 'FrickFake poster: Built by hard times, powered by pure grit. I don’t break, I rebuild. And I don’t need anybody’s approval to know my worth.' }))),
+    h('a', { class: 'home', href: '/' }, '← What is FrickFake?')
+  ), { notabs: true });
+}
+
+// ---------- waiting for verification ----------
+function viewPending(){
+  closeAll(); setTabs(false); updateMeChip();
+  var me = S.me;
+  view(h('div', null,
+    win('Waiting room', [
+      h('h2', null, 'You’re in line, ' + me.screen_name + '.'),
+      h('div', { class: 'numbox' }, h('small', null, 'Your FrickFake number'), h('b', null, num(me.number))),
+      h('p', { class: 'sub' }, 'A real human checks every new member before they can add buddies or chat. That’s how the fakes stay out. This page updates by itself, so you can close it and come back.'),
+      h('div', { class: 'grid2' }, h('button', { class: 'btn', type: 'button', onclick: share }, 'Invite friends'), h('button', { class: 'btn grey', type: 'button', onclick: logout }, 'Log out'))
+    ]),
+    profileForm('While you wait, fill in your profile')
+  ), { notabs: true });
+  S.unreadTotal = -1;
+  schedule();
+}
+
+// ---------- main app ----------
+function setTabs(on){ $('tabs').hidden = !on; }
+document.querySelectorAll('#tabs button').forEach(function(b){ b.addEventListener('click', function(){ showTab(b.dataset.tab); }); });
+function viewMain(){ setTabs(true); updateMeChip(); showTab(S.tab || 'buddies'); }
+function showTab(t){
+  S.tab = t;
+  document.querySelectorAll('#tabs button').forEach(function(b){ if (b.dataset.tab === t) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  if (t === 'buddies') tabBuddies();
+  else if (t === 'feed') tabFeed();
+  else if (t === 'find') tabFind();
+  else tabMe();
+  window.scrollTo(0, 0);
+}
+
+function tabBuddies(){
+  var me = S.me;
+  var sel = h('select', { 'aria-label': 'Your status' }, STATUS.map(function(s){ return h('option', { value: s[0], selected: me.status === s[0] }, s[1]); }));
+  var away = h('input', { maxlength: '120', placeholder: 'Away message, like “walking the dogs”', value: me.away_msg || '', 'aria-label': 'Away message' });
+  var saveAway = h('button', { class: 'btn small', type: 'submit' }, 'Save');
+  var awayRow = h('form', { class: 'row', style: 'margin-top:8px', hidden: !(me.status === 'away' || me.status === 'dnd'), onsubmit: function(e){ e.preventDefault(); saveStatus(saveAway); } }, away, saveAway);
+  async function saveStatus(btn){
+    try {
+      var r = await api('update_profile', { status: sel.value, away_msg: away.value });
+      S.me = r.me; updateMeChip();
+      $('mydot').className = 'dot ' + r.me.status;
+      toast(LABEL[r.me.status] + (r.me.away_msg && (r.me.status === 'away' || r.me.status === 'dnd') ? ': ' + r.me.away_msg : ''));
+    } catch (e) { toast(e.message); }
+  }
+  sel.addEventListener('change', function(){ awayRow.hidden = !(sel.value === 'away' || sel.value === 'dnd'); saveStatus(); });
+  var who = h('input', { placeholder: 'Their number or screen name', autocapitalize: 'off', spellcheck: 'false', maxlength: '40', 'aria-label': 'Add a buddy by number or screen name' });
+  var addBtn = h('button', { class: 'btn small', type: 'submit' }, 'Add');
+  var addForm = h('form', { class: 'row', style: 'margin-top:10px', onsubmit: function(e){
+      e.preventDefault();
+      if (!who.value.trim()) { who.focus(); return; }
+      busy(addBtn, '…', async function(){
+        try { var r = await api('add', { who: who.value.trim() }); who.value = ''; addToast(r); poll(); }
+        catch (ex) { toast(ex.message); }
+      });
+    } }, who, addBtn);
+  view(h('div', null,
+    win(num(me.number) + ' · ' + me.screen_name, [
+      h('div', { class: 'row', style: 'align-items:center' }, h('i', { class: 'dot ' + me.status, id: 'mydot', 'aria-hidden': 'true', style: 'margin:0 4px' }), sel),
+      awayRow, addForm,
+      h('div', { class: 'list', id: 'blist' }, h('p', { class: 'empty' }, 'Loading your buddies…'))
+    ], { cls: 'buddy' })
+  ));
+  renderBuddyList();
+}
+function addToast(r){
+  var n = r.who ? r.who.screen_name : 'them';
+  toast(r.state === 'buddies' ? 'You and ' + n + ' are buddies now!' : 'Asked ' + n + '. Waiting for their OK.');
+}
+function rank(p){ return { free: 0, away: 1, dnd: 2 }[p] ?? 3; }
+function renderBuddyList(){
+  var list = $('blist'); if (!list || !S.buddies) return;
+  var kids = [];
+  if (S.incoming.length) {
+    kids.push(h('div', { class: 'grp' }, 'Wants to add you (' + S.incoming.length + ')'));
+    S.incoming.forEach(function(q){
+      var mutual = q.mutual && q.mutual.length ? ' You both know ' + q.mutual.slice(0, 2).join(' and ') + (q.mutual.length > 2 ? ' + ' + (q.mutual.length - 2) + ' more' : '') + '.' : '';
+      kids.push(h('div', { class: 'ask' },
+        h('button', { class: 'who', type: 'button', onclick: function(){ openProfile(q.id); } }, q.screen_name + ' ' + num(q.number)),
+        ' wants to add you. Verified human' + (q.city ? ' from ' + q.city : '') + '.' + mutual,
+        h('div', { class: 'acts' },
+          h('button', { class: 'btn green', type: 'button', onclick: function(e){ respond(q, true, e.currentTarget); } }, 'Allow'),
+          h('button', { class: 'btn grey', type: 'button', onclick: function(e){ respond(q, false, e.currentTarget); } }, 'Nope'))));
+    });
+  }
+  var on = S.buddies.filter(function(b){ return b.presence !== 'offline'; }).sort(function(a, b){ return rank(a.presence) - rank(b.presence); });
+  var off = S.buddies.filter(function(b){ return b.presence === 'offline'; });
+  kids.push(h('div', { class: 'grp' }, 'Real Ones (' + on.length + '/' + S.buddies.length + ')'));
+  if (!S.buddies.length) kids.push(h('p', { class: 'empty' }, 'No buddies yet. Add someone by their number or screen name above, or go to Find.'));
+  else if (!on.length) kids.push(h('p', { class: 'empty' }, 'Nobody’s on right now.'));
+  on.forEach(function(b){ kids.push(palRow(b)); });
+  if (off.length) { kids.push(h('div', { class: 'grp' }, 'Offline (' + off.length + ')')); off.forEach(function(b){ kids.push(palRow(b)); }); }
+  if (S.outgoing.length) {
+    kids.push(h('div', { class: 'grp' }, 'Waiting on (' + S.outgoing.length + ')'));
+    S.outgoing.forEach(function(o){
+      kids.push(h('button', { class: 'pal', type: 'button', onclick: function(){ openProfile(o.id); } }, h('i', { class: 'dot offline' }), h('span', { class: 'nm' }, o.screen_name), h('span', { class: 'st' }, 'Asked · waiting for their OK')));
+    });
+  }
+  list.replaceChildren.apply(list, kids);
+}
+function palRow(b){
+  var st = b.presence === 'offline' ? (b.last_seen ? 'Last on ' + ago(b.last_seen) : 'Offline') : LABEL[b.presence] + (b.away_msg ? ': ' + b.away_msg : '');
+  return h('button', { class: 'pal', type: 'button', 'aria-label': 'Chat with ' + b.screen_name + ', ' + st + (b.unread ? ', ' + b.unread + ' new' : ''), onclick: function(){ openChat(b); } },
+    h('i', { class: 'dot ' + b.presence }), h('span', { class: 'nm' }, b.screen_name), h('span', { class: 'st' }, st),
+    b.unread ? h('span', { class: 'badge' }, b.unread) : null);
+}
+async function respond(q, allow, btn){
+  btn.disabled = true;
+  try { await api('respond', { req_id: q.req_id, allow: allow }); toast(allow ? 'You and ' + q.screen_name + ' are buddies now!' : 'Request hidden.'); await poll(); }
+  catch (e) { toast(e.message); btn.disabled = false; }
+}
+
+// ---------- chat ----------
+function openChat(b){
+  closeAll(true);
+  S.chat = { id: b.id, number: b.number, screen_name: b.screen_name };
+  S.lastMsgId = 0; S.firstMsgId = 0; S.seenUpTo = 0;
+  var c = $('chat');
+  var input = h('textarea', { rows: '1', maxlength: '2000', placeholder: 'Type a message', 'aria-label': 'Message ' + b.screen_name, enterkeyhint: 'send' });
+  var send = h('button', { class: 'btn', type: 'submit' }, 'Send');
+  input.addEventListener('input', function(){ input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight + 4, 140) + 'px'; });
+  input.addEventListener('keydown', function(e){ if (e.key === 'Enter' && !e.shiftKey && matchMedia('(pointer:fine)').matches) { e.preventDefault(); form.requestSubmit(); } });
+  var form = h('form', { class: 'compose', onsubmit: function(e){
+      e.preventDefault();
+      var text = input.value.trim(); if (!text) return;
+      send.disabled = true;
+      api('send', { to: b.id, body: text }).then(function(r){ input.value = ''; input.style.height = ''; appendMsgs([r.message], true); })
+        .catch(function(ex){ toast(ex.message); }).finally(function(){ send.disabled = false; input.focus(); });
+    } }, input, send);
+  var box = h('div', { class: 'chat', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Chat with ' + b.screen_name },
+    h('div', { class: 'top' },
+      h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Back to buddy list', onclick: back }, '←'),
+      h('button', { class: 'who', type: 'button', onclick: function(){ openProfile(b.id); } }, h('b', { id: 'chat-name' }, b.screen_name), h('span', null, h('i', { class: 'dot', id: 'chat-dot' }), h('span', { id: 'chat-st' }))),
+      h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'More', onclick: function(){ chatMenu(b); } }, '⋯')),
+    h('div', { class: 'awayline', id: 'chat-away', hidden: true }),
+    h('div', { class: 'msgs', id: 'msgs', 'aria-live': 'polite' }, h('p', { class: 'day' }, 'Loading…')),
+    form);
+  c.replaceChildren(box); c.hidden = false; lockBody();
+  pushOverlay(function(){ c.hidden = true; c.replaceChildren(); S.chat = null; lockBody(); if (S.tab === 'buddies') renderBuddyList(); schedule(); });
+  updateChatHeader(b);
+  api('history', { with: b.id }).then(function(r){
+    var m = $('msgs'); if (!m || !S.chat || S.chat.id !== b.id) return;
+    m.replaceChildren();
+    if (r.more) m.append(olderBtn(b.id));
+    if (!r.messages.length) m.append(h('p', { class: 'day', id: 'chat-empty' }, 'Say hi to ' + b.screen_name + '. Only the two of you can see this chat.'));
+    appendMsgs(r.messages, true);
+    S.firstMsgId = r.messages.length ? r.messages[0].id : 0;
+    S.seenUpTo = r.seen_up_to; markSeen();
+    var bb = S.buddies.find(function(x){ return x.id === b.id; }); if (bb) bb.unread = 0;
+    schedule();
+  }).catch(function(e){ toast(e.message); });
+  if (matchMedia('(pointer:fine)').matches) input.focus();
+  schedule();
+}
+function olderBtn(id){
+  return h('button', { class: 'linkbtn', type: 'button', style: 'display:block;margin:0 auto 8px', onclick: function(e){
+    var btn = e.currentTarget; btn.disabled = true;
+    api('history', { with: id, before: S.firstMsgId }).then(function(r){
+      var m = $('msgs'); if (!m) return;
+      var h0 = m.scrollHeight; btn.remove();
+      var frag = document.createDocumentFragment(); var lastDay = '';
+      r.messages.forEach(function(x){ var d = dayLabel(x.created_at); if (d !== lastDay) { frag.append(h('p', { class: 'day' }, d)); lastDay = d; } frag.append(msgEl(x)); });
+      if (r.more) frag.prepend(olderBtn(id));
+      m.prepend(frag);
+      if (r.messages.length) S.firstMsgId = r.messages[0].id;
+      m.scrollTop = m.scrollHeight - h0;
+    }).catch(function(e){ toast(e.message); btn.disabled = false; });
+  } }, 'Earlier messages');
+}
+function msgEl(x){
+  var mine = x.from_id === S.me.id;
+  return h('div', { class: 'msg ' + (mine ? 'me' : 'them'), 'data-id': x.id, 'data-day': dayLabel(x.created_at) },
+    h('div', { class: 'bub' }, x.body), h('div', { class: 'meta' }, clock(x.created_at)));
+}
+function appendMsgs(list, forceScroll){
+  var m = $('msgs'); if (!m || !list.length) return;
+  var empty = $('chat-empty'); if (empty) empty.remove();
+  var near = m.scrollHeight - m.scrollTop - m.clientHeight < 120;
+  var last = m.querySelector('.msg:last-of-type');
+  var lastDay = last ? last.dataset.day : '';
+  list.forEach(function(x){
+    if (x.id <= S.lastMsgId || m.querySelector('[data-id="' + x.id + '"]')) return;
+    var d = dayLabel(x.created_at);
+    if (d !== lastDay) { m.append(h('p', { class: 'day' }, d)); lastDay = d; }
+    m.append(msgEl(x));
+    S.lastMsgId = Math.max(S.lastMsgId, x.id);
+    if (x.from_id === S.me.id) forceScroll = true;
+  });
+  markSeen();
+  if (near || forceScroll) m.scrollTop = m.scrollHeight;
+}
+function markSeen(){
+  var m = $('msgs'); if (!m) return;
+  m.querySelectorAll('.seen').forEach(function(s){ s.remove(); });
+  var mine = m.querySelectorAll('.msg.me'); var lastMine = mine[mine.length - 1];
+  if (lastMine && S.seenUpTo >= Number(lastMine.dataset.id)) lastMine.append(h('div', { class: 'seen' }, 'Seen'));
+}
+function updateChatHeader(b){
+  var dot = $('chat-dot'); if (!dot) return;
+  dot.className = 'dot ' + b.presence;
+  $('chat-st').textContent = num(b.number) + ' · ' + (b.presence === 'offline' ? (b.last_seen ? 'Last on ' + ago(b.last_seen) : 'Offline') : LABEL[b.presence]);
+  var aw = $('chat-away');
+  aw.hidden = !b.away_msg; aw.textContent = b.away_msg ? (b.presence === 'dnd' ? 'Do not disturb: ' : 'Away: ') + b.away_msg : '';
+}
+function chatMenu(b){
+  sheet(b.screen_name, h('div', { class: 'stack' },
+    h('button', { class: 'btn grey', type: 'button', onclick: function(){ openProfile(b.id); } }, 'View profile'),
+    h('button', { class: 'btn grey', type: 'button', onclick: function(){ removeBuddy(b); } }, 'Remove from buddies'),
+    h('button', { class: 'btn grey', type: 'button', onclick: function(){ blockUser(b); } }, 'Block'),
+    h('button', { class: 'btn grey', type: 'button', onclick: function(){ reportUser(b); } }, 'Report')));
+}
+async function removeBuddy(b){
+  if (!(await confirmSheet('Remove ' + b.screen_name + '?', 'You won’t be able to message each other until one of you adds the other again.', 'Remove', true))) return;
+  try { await api('remove', { id: b.id }); toast('Removed ' + b.screen_name + '.'); closeAll(); await poll(); } catch (e) { toast(e.message); }
+}
+async function blockUser(b){
+  if (!(await confirmSheet('Block ' + b.screen_name + '?', 'They’ll be removed from your buddies and can’t find you, add you, or message you. They won’t be told.', 'Block', true))) return;
+  try { await api('block', { id: b.id }); toast('Blocked ' + b.screen_name + '.'); closeAll(); await poll(); } catch (e) { toast(e.message); }
+}
+function reportUser(b){
+  var why = h('textarea', { maxlength: '500', placeholder: 'What happened? (spam, scam, fake profile, harassment…)' });
+  var btn = h('button', { class: 'btn', type: 'submit' }, 'Send report');
+  var also = h('input', { type: 'checkbox', checked: true });
+  sheet('Report ' + b.screen_name, h('form', { onsubmit: function(e){
+      e.preventDefault();
+      busy(btn, 'Sending…', async function(){
+        try {
+          await api('report', { id: b.id, reason: why.value });
+          if (also.checked) await api('block', { id: b.id });
+          toast('Thanks. A real human will look at this.'); closeAll(); poll();
+        } catch (ex) { toast(ex.message); }
+      });
+    } }, h('p', { class: 'sub', style: 'margin-top:0' }, 'Reports go to the FrickFake team, not to ' + b.screen_name + '.'), field('What happened?', why), checkbox(also, 'Also block them'), btn));
+}
+function closeAll(keepGuard){
+  while (stack.length) { var c = stack.pop(); c(); }
+  if (!keepGuard) dropGuard();
+}
+
+// ---------- profile ----------
+async function openProfile(id){
+  try {
+    var r = await api('profile', { id: id });
+    var p = r.profile;
+    var acts = [];
+    if (p.rel === 'me') acts.push(h('p', { class: 'sub' }, 'This is you. Edit your profile in Me.'));
+    else if (p.blocked) acts.push(h('button', { class: 'btn grey', type: 'button', onclick: async function(){ await api('unblock', { id: p.id }); toast('Unblocked.'); back(); } }, 'Unblock'));
+    else {
+      if (p.rel === 'buddies') acts.push(h('button', { class: 'btn', type: 'button', onclick: function(){ var b = S.buddies.find(function(x){ return x.id === p.id; }) || { id: p.id, number: p.number, screen_name: p.screen_name, presence: p.presence || 'offline', away_msg: p.away_msg }; openChat(b); } }, 'Message'));
+      else if (p.rel === 'sent') acts.push(h('button', { class: 'btn grey', type: 'button', disabled: true }, 'Asked · waiting for their OK'));
+      else if (p.rel === 'received') acts.push(h('div', { class: 'grid2' },
+        h('button', { class: 'btn green', type: 'button', onclick: async function(e){ await respond({ req_id: p.req_id, screen_name: p.screen_name }, true, e.currentTarget); back(); } }, 'Allow'),
+        h('button', { class: 'btn grey', type: 'button', onclick: async function(e){ await respond({ req_id: p.req_id, screen_name: p.screen_name }, false, e.currentTarget); back(); } }, 'Nope')));
+      else acts.push(h('button', { class: 'btn', type: 'button', onclick: function(e){ var btn = e.currentTarget; busy(btn, '…', async function(){ try { var x = await api('add', { id: p.id }); addToast(x); back(); poll(); } catch (ex) { toast(ex.message); } }); } }, 'Add to buddies'));
+      acts.push(h('div', { class: 'grid2' },
+        h('button', { class: 'btn grey', type: 'button', onclick: function(){ blockUser(p); } }, 'Block'),
+        h('button', { class: 'btn grey', type: 'button', onclick: function(){ reportUser(p); } }, 'Report')));
+    }
+    var ints = (p.interests || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+    sheet(p.screen_name, h('div', null,
+      h('div', { class: 'numbox', style: 'margin-top:0' }, h('small', null, p.screen_name), h('b', null, num(p.number))),
+      p.presence ? h('p', { class: 'kv' }, h('i', { class: 'dot ' + p.presence, style: 'margin-right:6px' }), LABEL[p.presence] + (p.away_msg ? ': ' + p.away_msg : '')) : null,
+      h('p', { class: 'kv' }, (p.city ? p.city + ' · ' : '') + 'Verified human since ' + new Date(p.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })),
+      ints.length ? h('div', { class: 'chips' }, ints.map(function(t){ return h('span', { class: 'chip' }, t); })) : null,
+      p.bio ? h('p', { class: 'body' }, p.bio) : null,
+      h('div', { class: 'stack', style: 'margin-top:14px' }, acts)));
+  } catch (e) { toast(e.message); }
+}
+
+// ---------- feed ----------
+function tabFeed(){
+  var ta = h('textarea', { maxlength: '1000', placeholder: 'What’s real today?', 'aria-label': 'Write a post' });
+  var cnt = h('div', { class: 'counter' }, '0/1000');
+  var btn = h('button', { class: 'btn', type: 'submit' }, 'Post');
+  ta.addEventListener('input', function(){ cnt.textContent = ta.value.length + '/1000'; });
+  var list = h('div', { id: 'posts' }, h('p', { class: 'spin' }, 'Loading posts…'));
+  var more = h('button', { class: 'btn grey', type: 'button', hidden: true, onclick: function(){ loadFeed(false, more); } }, 'Load more');
+  view(h('div', null,
+    win('New post', h('form', { onsubmit: function(e){
+        e.preventDefault();
+        if (!ta.value.trim()) { ta.focus(); return; }
+        busy(btn, 'Posting…', async function(){
+          try { var r = await api('post', { body: ta.value }); ta.value = ''; cnt.textContent = '0/1000'; var l = $('posts'); var empty = l.querySelector('.empty-feed'); if (empty) empty.remove(); l.prepend(postEl(r.post)); }
+          catch (ex) { toast(ex.message); }
+        });
+      } }, ta, cnt, btn, h('p', { class: 'note' }, 'Only your buddies see your posts.'))),
+    h('h2', { class: 'section-title' }, 'You + your buddies'),
+    list, more));
+  loadFeed(true, more);
+}
+async function loadFeed(reset, more){
+  try {
+    var r = await api('feed', reset ? {} : { before: S.feedBefore });
+    var l = $('posts'); if (!l) return;
+    if (reset) l.replaceChildren();
+    if (reset && !r.posts.length) l.append(h('div', { class: 'card empty-feed' }, h('p', { style: 'margin:0' }, 'Nothing here yet. Post something real, or add some buddies so their posts show up here.')));
+    r.posts.forEach(function(p){ l.append(postEl(p)); });
+    if (r.posts.length) S.feedBefore = r.posts[r.posts.length - 1].id;
+    more.hidden = !r.more;
+  } catch (e) { toast(e.message); }
+}
+function postEl(p){
+  var mine = p.user_id === S.me.id;
+  var realBtn = h('button', { class: 'real', type: 'button', 'aria-pressed': String(!!p.mine_real), disabled: mine || null, title: mine ? 'Your buddies can mark your posts real' : null }, '👊 Real', h('span', null, p.reals ? ' ' + p.reals : ''));
+  realBtn.addEventListener('click', async function(){
+    var on = realBtn.getAttribute('aria-pressed') !== 'true';
+    try { var r = await api('real', { post: p.id, on: on }); realBtn.setAttribute('aria-pressed', String(r.mine_real)); realBtn.lastChild.textContent = r.reals ? ' ' + r.reals : ''; }
+    catch (e) { toast(e.message); }
+  });
+  var card = h('article', { class: 'card' },
+    h('div', { class: 'hd' }, h('button', { class: 'nm', type: 'button', onclick: function(){ openProfile(p.user_id); } }, p.screen_name), h('span', { class: 'num' }, num(p.number)), h('span', { class: 'when' }, ago(p.created_at))),
+    h('p', { class: 'body' }, p.body),
+    h('div', { class: 'ft' }, realBtn, mine ? h('button', { class: 'linkbtn', type: 'button', style: 'margin-left:auto', onclick: async function(){
+      if (!(await confirmSheet('Delete this post?', 'It’ll be gone for everyone.', 'Delete', true))) return;
+      try { await api('delete_post', { post: p.id }); card.remove(); toast('Post deleted.'); } catch (e) { toast(e.message); }
+    } }, 'Delete') : null));
+  return card;
+}
+
+// ---------- find ----------
+function tabFind(){
+  var q = h('input', { placeholder: 'Interest, screen name or #number', autocapitalize: 'off', maxlength: '60', 'aria-label': 'Search' });
+  var city = h('input', { placeholder: 'City (optional)', maxlength: '80', 'aria-label': 'City' });
+  var btn = h('button', { class: 'btn', type: 'submit' }, 'Search');
+  var res = h('div', { id: 'results' });
+  var form = h('form', { onsubmit: function(e){ e.preventDefault(); busy(btn, 'Searching…', function(){ return runSearch(q.value, city.value, res); }); } },
+    h('p', { class: 'sub', style: 'margin-top:0' }, 'Every person here is a verified human. Nobody can message you unless you say yes.'),
+    h('div', { class: 'field' }, q), h('div', { class: 'field' }, city), btn);
+  view(h('div', null, win('Find your people', form), h('h2', { class: 'section-title', id: 'find-title' }, 'Newest members'), res));
+  runSearch('', '', res);
+}
+async function runSearch(q, city, res){
+  try {
+    var r = await api('search', { q: q.trim(), city: city.trim() });
+    var t = $('find-title'); if (t) t.textContent = q.trim() || city.trim() ? r.people.length + ' found' : 'Newest members';
+    res.replaceChildren();
+    if (!r.people.length) res.append(h('div', { class: 'card' }, q.trim() || city.trim() ? 'Nobody matches that yet. Try another interest, or invite your real ones.' : 'You’re early! Invite your real ones so there’s someone to find.'));
+    r.people.forEach(function(p){ res.append(personCard(p)); });
+  } catch (e) { toast(e.message); }
+}
+function personCard(p){
+  var actBtn;
+  function setAct(rel){
+    var map = { buddies: ['Message', 'btn small'], sent: ['Asked', 'btn small grey'], received: ['Allow', 'btn small green'] };
+    var m = map[rel] || ['Add', 'btn small'];
+    actBtn.textContent = m[0]; actBtn.className = m[1]; actBtn.disabled = rel === 'sent';
+  }
+  actBtn = h('button', { type: 'button', style: 'margin-left:auto', onclick: async function(){
+    if (p.rel === 'buddies') { var b = S.buddies.find(function(x){ return x.id === p.id; }) || { id: p.id, number: p.number, screen_name: p.screen_name, presence: 'offline' }; openChat(b); return; }
+    actBtn.disabled = true;
+    try {
+      if (p.rel === 'received') { await api('respond', { req_id: p.req_id, allow: true }); p.rel = 'buddies'; toast('You and ' + p.screen_name + ' are buddies now!'); }
+      else { var r = await api('add', { id: p.id }); p.rel = r.state === 'buddies' ? 'buddies' : 'sent'; addToast(r); }
+      setAct(p.rel); poll();
+    } catch (e) { toast(e.message); actBtn.disabled = false; }
+  } });
+  setAct(p.rel);
+  var ints = (p.interests || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean).slice(0, 6);
+  return h('div', { class: 'card' },
+    h('div', { class: 'hd', style: 'align-items:center' }, h('button', { class: 'nm', type: 'button', onclick: function(){ openProfile(p.id); } }, p.screen_name), h('span', { class: 'num' }, num(p.number)), actBtn),
+    p.city ? h('div', { class: 'num', style: 'margin-top:2px' }, p.city) : null,
+    ints.length ? h('div', { class: 'chips' }, ints.map(function(t){ return h('span', { class: 'chip' }, t); })) : null,
+    p.bio ? h('p', { class: 'body', style: 'font-size:15px' }, p.bio.length > 160 ? p.bio.slice(0, 160) + '…' : p.bio) : null);
+}
+
+// ---------- me ----------
+function profileForm(title){
+  var me = S.me;
+  var sn = h('input', { maxlength: '20', autocapitalize: 'off', spellcheck: 'false', value: me.screen_name });
+  var city = h('input', { maxlength: '80', value: me.city || '' });
+  var ints = h('input', { maxlength: '200', value: me.interests || '', placeholder: 'punk, tarot, dogs, skating' });
+  var bio = h('textarea', { maxlength: '300', value: me.bio || '', placeholder: 'A little about you. Keep it real.' });
+  var btn = h('button', { class: 'btn', type: 'submit' }, 'Save profile');
+  return win(title, h('form', { onsubmit: function(e){
+      e.preventDefault();
+      busy(btn, 'Saving…', async function(){
+        try { var r = await api('update_profile', { screen_name: sn.value.trim(), city: city.value, interests: ints.value, bio: bio.value }); S.me = r.me; updateMeChip(); toast('Profile saved.'); }
+        catch (ex) { toast(ex.message); }
+      });
+    } }, field('Screen name', sn), field('City', city, true), field('Interests', ints, true, 'Separate with commas.'), field('About you', bio, true), btn));
+}
+function tabMe(){
+  var me = S.me;
+  var oldPw = h('input', { type: 'password', autocomplete: 'current-password' });
+  var newPw = h('input', { type: 'password', autocomplete: 'new-password' });
+  var pwBtn = h('button', { class: 'btn', type: 'submit' }, 'Change password');
+  var delPw = h('input', { type: 'password', autocomplete: 'current-password' });
+  var delBtn = h('button', { class: 'btn', type: 'submit' }, 'Delete my account forever');
+  var blocked = h('div', null, h('p', { class: 'sub' }, 'Loading…'));
+  var blockedBox = h('details', { class: 'more' }, h('summary', null, 'Blocked people'), h('div', null, blocked));
+  blockedBox.addEventListener('toggle', function(){
+    if (!blockedBox.open) return;
+    api('blocked_list').then(function(r){
+      blocked.replaceChildren();
+      if (!r.blocked.length) blocked.append(h('p', { class: 'sub', style: 'margin:0' }, 'You haven’t blocked anyone.'));
+      r.blocked.forEach(function(b){
+        var row = h('div', { class: 'row', style: 'align-items:center;margin:6px 0' }, h('span', { style: 'flex:1' }, b.screen_name + ' ' + num(b.number)),
+          h('button', { class: 'btn small grey', type: 'button', onclick: async function(){ try { await api('unblock', { id: b.id }); row.remove(); toast('Unblocked ' + b.screen_name + '.'); } catch (e) { toast(e.message); } } }, 'Unblock'));
+        blocked.append(row);
+      });
+    }).catch(function(e){ blocked.replaceChildren(h('p', { class: 'err' }, e.message)); });
+  });
+  view(h('div', null,
+    win('My number', [
+      h('div', { class: 'numbox', style: 'margin-top:0' }, h('small', null, me.screen_name), h('b', null, num(me.number))),
+      h('p', { class: 'sub' }, 'People can add you by this number or your screen name. Verified human since ' + new Date(me.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) + '.'),
+      h('div', { class: 'grid2' }, h('button', { class: 'btn', type: 'button', onclick: share }, 'Invite friends'), h('button', { class: 'btn grey', type: 'button', onclick: function(){ openProfile(me.id); } }, 'See my profile'))
+    ]),
+    profileForm('My profile'),
+    h('details', { class: 'more' }, h('summary', null, 'Put FrickFake on your home screen'), h('div', null,
+      h('p', { class: 'sub', style: 'margin-top:0' }, 'Android (Chrome): tap the ⋮ menu, then “Add to Home screen” or “Install app”.'),
+      h('p', { class: 'sub' }, 'iPhone (Safari): tap the Share button, then “Add to Home Screen”.'))),
+    h('details', { class: 'more' }, h('summary', null, 'Change password'), h('div', null, h('form', { onsubmit: function(e){
+      e.preventDefault();
+      busy(pwBtn, 'Saving…', async function(){
+        try { await api('change_password', { old: oldPw.value, new: newPw.value }); oldPw.value = ''; newPw.value = ''; toast('Password changed.'); }
+        catch (ex) { toast(ex.message); }
+      });
+    } }, field('Current password', oldPw), field('New password', newPw, false, 'At least 8 characters.'), pwBtn))),
+    blockedBox,
+    h('button', { class: 'btn grey', type: 'button', onclick: logout, style: 'margin:6px 0 14px' }, 'Log out'),
+    h('details', { class: 'more' }, h('summary', null, 'Delete account'), h('div', null, h('form', { onsubmit: async function(e){
+      e.preventDefault();
+      if (!(await confirmSheet('Delete your account?', 'Your number, buddies, messages and posts will be erased. This can’t be undone.', 'Delete everything', true))) return;
+      busy(delBtn, 'Deleting…', async function(){
+        try { await api('delete_account', { password: delPw.value }); S.me = null; store('ff_known', null); viewAuth('new', 'Your account was deleted. Take care out there.'); }
+        catch (ex) { toast(ex.message); }
+      });
+    } }, h('p', { class: 'sub', style: 'margin-top:0' }, 'This erases your number, buddies, messages and posts.'), field('Type your password to confirm', delPw), delBtn)))
+  ));
+}
+function share(){
+  var me = S.me;
+  var url = location.origin + '/';
+  var text = 'Add me on FrickFake: ' + num(me.number) + ' (' + me.screen_name + '). The old-school messenger for real people only. No bots, no scammers, no catfish.';
+  if (navigator.share) navigator.share({ title: 'FrickFake', text: text, url: url }).catch(function(){});
+  else if (navigator.clipboard) navigator.clipboard.writeText(text + ' ' + url).then(function(){ toast('Invite copied. Paste it anywhere.'); }, function(){ toast(url); });
+  else toast(url);
+}
+async function logout(){
+  try { await api('logout'); } catch (e) {}
+  S.me = null; S.buddies = []; S.incoming = []; S.outgoing = []; S.unreadTotal = -1;
+  viewAuth('login', '');
+}
+
+// ---------- boss mode (admin) at /app#boss ----------
+function viewBoss(){
+  stopPoll(); closeAll(); setTabs(false);
+  var key = store('ff_boss');
+  if (!key) {
+    var inp = h('input', { type: 'password', autocomplete: 'off', 'aria-label': 'Admin key' });
+    var err = h('p', { class: 'err', role: 'alert' });
+    var btn = h('button', { class: 'btn', type: 'submit' }, 'Open boss mode');
+    view(h('div', null, win('Boss mode', h('form', { onsubmit: function(e){
+        e.preventDefault();
+        busy(btn, 'Checking…', async function(){
+          try { await api('admin_overview', { key: inp.value.trim() }); store('ff_boss', inp.value.trim()); viewBoss(); }
+          catch (ex) { err.textContent = ex.message; }
+        });
+      } }, h('h2', null, 'Boss mode'), h('p', { class: 'sub' }, 'Enter your FrickFake admin key (the same one you use for your waitlist list). It stays on this phone only.'), field('Admin key', inp), err, btn)),
+      h('a', { class: 'home', href: '/app' }, '← Back to the app')), { notabs: true });
+    return;
+  }
+  view(h('p', { class: 'spin' }, 'Loading boss mode…'), { notabs: true });
+  loadBoss(key);
+}
+async function loadBoss(key){
+  var r;
+  try { r = await api('admin_overview', { key: key }); }
+  catch (e) {
+    if (e.code === 'admin') { store('ff_boss', null); return viewBoss(); }
+    return view(h('div', null, win('Boss mode', [h('p', { class: 'err' }, e.message), h('button', { class: 'btn', type: 'button', onclick: viewBoss }, 'Try again')])), { notabs: true });
+  }
+  var c = r.counts;
+  function stat(n, l){ return h('div', { class: 'stat' }, h('b', null, n), h('span', null, l)); }
+  async function act(data, msg){ try { await api(data.action, Object.assign({ key: key }, data)); toast(msg); loadBoss(key); } catch (e) { toast(e.message); } }
+  var pending = r.pending.length ? r.pending.map(function(u){
+    return h('div', { class: 'card' },
+      h('div', { class: 'hd' }, h('b', null, u.screen_name), h('span', { class: 'num' }, num(u.number)), h('span', { class: 'when' }, ago(u.created_at))),
+      h('p', { class: 'kv' }, u.email + (u.city ? ' · ' + u.city : '')),
+      u.from_waitlist ? h('p', { class: 'kv' }, 'On the waitlist as “' + (u.waitlist_name || '?') + '”') : h('p', { class: 'kv' }, 'Signed up in the app (not on the waitlist)'),
+      u.why ? h('p', { class: 'kv' }, 'Why they quit fake social: “' + u.why + '”') : null,
+      u.interests ? h('p', { class: 'kv' }, 'Interests: ' + u.interests) : null,
+      u.bio ? h('p', { class: 'body' }, u.bio) : null,
+      h('div', { class: 'grid2', style: 'margin-top:10px' },
+        h('button', { class: 'btn green', type: 'button', onclick: function(){ act({ action: 'admin_set', id: u.id, verified: true }, 'Verified ' + u.screen_name + '.'); } }, 'Verify'),
+        h('button', { class: 'btn grey', type: 'button', onclick: async function(){ if (await confirmSheet('Ban ' + u.screen_name + '?', 'They’ll be kicked out and can’t log in.', 'Ban', true)) act({ action: 'admin_set', id: u.id, banned: true }, 'Banned.'); } }, 'Ban')));
+  }) : [h('div', { class: 'card' }, 'Nobody waiting. 🎉')];
+  var reports = r.reports.map(function(x){
+    return h('div', { class: 'card' },
+      h('div', { class: 'hd' }, h('b', null, x.target_name), h('span', { class: 'num' }, num(x.target_number)), x.target_banned ? h('span', { class: 'tag bad' }, 'banned') : null, h('span', { class: 'when' }, ago(x.created_at))),
+      h('p', { class: 'kv' }, 'Reported by ' + (x.reporter_name ? x.reporter_name + ' ' + num(x.reporter_number) : 'a deleted account')),
+      x.reason ? h('p', { class: 'body' }, x.reason) : null,
+      h('div', { class: 'grid2', style: 'margin-top:10px' },
+        x.target_banned ? h('span') : h('button', { class: 'btn', type: 'button', onclick: async function(){ if (await confirmSheet('Ban ' + x.target_name + '?', 'They’ll be kicked out and can’t log in.', 'Ban', true)) { await act({ action: 'admin_set', id: x.target_id, banned: true }, 'Banned.'); act({ action: 'admin_resolve', id: x.id }, 'Report closed.'); } } }, 'Ban them'),
+        h('button', { class: 'btn grey', type: 'button', onclick: function(){ act({ action: 'admin_resolve', id: x.id }, 'Report closed.'); } }, 'Dismiss')));
+  });
+  var members = r.members.map(function(u){
+    var tag = u.banned ? h('span', { class: 'tag bad' }, 'banned') : u.verified ? h('span', { class: 'tag ok' }, 'verified') : h('span', { class: 'tag wait' }, 'waiting');
+    return h('div', { class: 'card' },
+      h('div', { class: 'hd' }, h('b', null, u.screen_name), h('span', { class: 'num' }, num(u.number)), tag, h('span', { class: 'when' }, u.last_seen ? 'on ' + ago(u.last_seen) : 'never on')),
+      h('p', { class: 'kv' }, u.email + (u.city ? ' · ' + u.city : '')),
+      h('div', { class: 'row', style: 'flex-wrap:wrap;margin-top:8px' },
+        u.banned ? h('button', { class: 'btn small grey', type: 'button', onclick: function(){ act({ action: 'admin_set', id: u.id, banned: false }, 'Unbanned.'); } }, 'Unban')
+          : h('button', { class: 'btn small grey', type: 'button', onclick: async function(){ if (await confirmSheet('Ban ' + u.screen_name + '?', 'They’ll be kicked out and can’t log in.', 'Ban', true)) act({ action: 'admin_set', id: u.id, banned: true }, 'Banned.'); } }, 'Ban'),
+        h('button', { class: 'btn small grey', type: 'button', onclick: function(){ act({ action: 'admin_set', id: u.id, verified: !u.verified }, u.verified ? 'Unverified.' : 'Verified.'); } }, u.verified ? 'Unverify' : 'Verify'),
+        h('button', { class: 'btn small grey', type: 'button', onclick: async function(){
+          if (!(await confirmSheet('Reset ' + u.screen_name + '’s password?', 'They’ll be logged out. You’ll get a temporary password to send them.', 'Reset it'))) return;
+          try {
+            var x = await api('admin_reset_password', { key: key, id: u.id });
+            var copy = h('button', { class: 'btn', type: 'button', onclick: function(){ if (navigator.clipboard) navigator.clipboard.writeText(x.temp_password).then(function(){ toast('Copied'); }); } }, 'Copy');
+            setTimeout(function(){ sheet('Temporary password', h('div', null, h('p', { class: 'sub', style: 'margin-top:0' }, 'Send this to ' + u.screen_name + '. They can change it in Me after logging in.'), h('div', { class: 'temp' }, x.temp_password), copy)); }, 80);
+          } catch (e) { toast(e.message); }
+        } }, 'Reset password')));
+  });
+  view(h('div', null,
+    h('h2', { class: 'section-title' }, 'Boss mode'),
+    h('div', { class: 'stats' }, stat(c.total, 'members'), stat(c.verified, 'verified'), stat(c.pending, 'waiting'), stat(c.online, 'online now'), stat(c.messages, 'messages'), stat(c.posts, 'posts'), stat(c.banned, 'banned')),
+    h('h2', { class: 'section-title' }, 'Waiting room (' + r.pending.length + ')'), pending,
+    reports.length ? [h('h2', { class: 'section-title' }, 'Reports (' + reports.length + ')'), reports] : null,
+    h('details', { class: 'more' }, h('summary', null, 'All members (' + r.members.length + ')'), h('div', null, members)),
+    h('div', { class: 'grid2' },
+      h('a', { class: 'btn grey', href: '/api/admin?key=' + encodeURIComponent(key), target: '_blank', rel: 'noopener' }, 'Waitlist list'),
+      h('button', { class: 'btn grey', type: 'button', onclick: function(){ loadBoss(key); } }, 'Refresh')),
+    h('div', { class: 'grid2', style: 'margin-top:8px' },
+      h('a', { class: 'btn ghost', href: '/app' }, 'Open the app'),
+      h('button', { class: 'btn ghost', type: 'button', onclick: function(){ store('ff_boss', null); viewBoss(); } }, 'Forget key'))
+  ), { notabs: true });
+}
+
+// ---------- start ----------
+function viewNoDb(){
+  view(h('div', null, win('Almost ready', [
+    h('h2', null, 'FrickFake is almost open'),
+    h('p', { class: 'sub' }, 'The app is here, but its database isn’t connected yet. Check back soon!'),
+    h('p', { class: 'note' }, 'Running this site? In Vercel, open the frickfake project → Storage → connect a Neon database, then redeploy.')
+  ]), h('a', { class: 'home', href: '/' }, '← Back to FrickFake')), { notabs: true });
+}
+function start(){
+  if (location.hash === '#boss') return viewBoss();
+  if (!S.me) return viewAuth(new URLSearchParams(location.search).get('email') || !store('ff_known') ? 'new' : 'login');
+  if (!S.me.verified) return viewPending();
+  S.unreadTotal = -1;
+  viewMain(); poll();
+}
+async function boot(){
+  if (location.hash === '#boss') return viewBoss();
+  try { var r = await api('me'); S.me = r.me; }
+  catch (e) { if (e.code === 'no_db' || e.code === 'db_down') return viewNoDb(); S.me = null; }
+  start();
+}
+window.addEventListener('hashchange', function(){ if (location.hash === '#boss') viewBoss(); else boot(); });
+boot();
+})();
+</script>
+</body>
+</html>
