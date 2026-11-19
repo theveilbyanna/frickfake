@@ -16,7 +16,7 @@
 <style>
 :root{
   --ink:#0d0c0b; --ink2:#1a1817; --line:#34302c;
-  --bone:#f3ece0; --muted:#b2a796; --red:#e5322b; --red-dark:#8f1712; --red-ink:#fff4ef;
+  --bone:#f3ece0; --muted:#b2a796; --red:#e5322b; --red-dark:#8f1712; --red-ink:#fff4ef; --red-hi:#ff8a80; --bar-ink:#fff4ef;
   --putty:#cdc6ba; --hi:#fffaf0; --lo:#6d665c; --shadow:#2b2724; --paper:#fffdf8; --text2:#4f4942;
   --on:#3fbf4a; --away:#f2b630; --dnd:#e5322b; --off:#8e877c; --invisible:#8e877c;
   --display:'Anton', Impact, 'Arial Narrow Bold', sans-serif;
@@ -45,7 +45,7 @@ main.notabs{padding-bottom:40px}
 
 /* retro windows */
 .win{background:var(--putty);color:var(--ink);border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);box-shadow:inset -2px -2px 0 var(--lo),inset 2px 2px 0 #e9e3d8,6px 6px 0 var(--red);padding:3px;margin:6px 0 22px}
-.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;background:linear-gradient(90deg,var(--red-dark),var(--red));color:var(--red-ink);padding:4px 4px 4px 8px;font-family:var(--pixel);font-weight:700;font-size:15px;letter-spacing:.02em;min-height:28px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;background:linear-gradient(90deg,var(--red-dark),var(--red));color:var(--bar-ink);padding:4px 4px 4px 8px;font-family:var(--pixel);font-weight:700;font-size:15px;letter-spacing:.02em;min-height:28px}
 .bar .ttl{display:flex;align-items:center;gap:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar .ctl{display:flex;gap:3px;flex:none}
 .bar .ctl span{width:20px;height:18px;background:var(--putty);color:var(--ink);font:700 12px/16px var(--pixel);text-align:center;border:1px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi)}
@@ -62,8 +62,8 @@ select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(
 .check{display:flex;gap:10px;align-items:flex-start;font-size:15px;margin:4px 0 14px;cursor:pointer}
 .check input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--red);flex:none}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;padding:8px 14px;background:var(--red);color:var(--red-ink);font-family:var(--pixel);font-weight:700;font-size:19px;letter-spacing:.02em;cursor:pointer;border:2px solid;border-color:#ff8a80 var(--red-dark) var(--red-dark) #ff8a80;box-shadow:1px 1px 0 var(--shadow);border-radius:0;text-decoration:none;text-align:center}
-.btn:active{border-color:var(--red-dark) #ff8a80 #ff8a80 var(--red-dark)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;padding:8px 14px;background:var(--red);color:var(--red-ink);font-family:var(--pixel);font-weight:700;font-size:19px;letter-spacing:.02em;cursor:pointer;border:2px solid;border-color:var(--red-hi) var(--red-dark) var(--red-dark) var(--red-hi);box-shadow:1px 1px 0 var(--shadow);border-radius:0;text-decoration:none;text-align:center}
+.btn:active{border-color:var(--red-dark) var(--red-hi) var(--red-hi) var(--red-dark)}
 .btn:disabled{opacity:.6;cursor:default}
 .btn.grey{background:var(--putty);color:var(--ink);border-color:var(--hi) var(--shadow) var(--shadow) var(--hi)}
 .btn.green{background:var(--on);color:#06210a;border-color:#9be8a1 #1f6b26 #1f6b26 #9be8a1}
@@ -120,7 +120,7 @@ select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(
 .body{white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0 0;font-size:16px}
 .card .ft{display:flex;gap:8px;margin-top:10px;align-items:center}
 .real{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:4px 12px;background:var(--putty);border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);font-family:var(--pixel);font-weight:700;font-size:15px;cursor:pointer;color:var(--ink)}
-.real[aria-pressed=true]{background:var(--red);color:#fff;border-color:#ff8a80 var(--red-dark) var(--red-dark) #ff8a80}
+.real[aria-pressed=true]{background:var(--red);color:var(--red-ink);border-color:var(--red-hi) var(--red-dark) var(--red-dark) var(--red-hi)}
 .linkbtn{background:none;border:0;color:#5e574e;font-size:14px;cursor:pointer;text-decoration:underline;padding:6px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .chip{font-family:var(--type);font-size:13px;padding:3px 8px;border:1px solid #c9c1b4;background:#f6f1e8;color:var(--ink)}
@@ -140,7 +140,7 @@ details.more > div{padding:0 12px 12px}
 /* chat + sheets */
 .overlay{position:fixed;inset:0;z-index:40;display:flex;justify-content:center;background:rgba(13,12,11,.6)}
 .chat{width:100%;max-width:560px;height:100%;display:flex;flex-direction:column;background:var(--putty);color:var(--ink)}
-.chat .top{display:flex;align-items:center;gap:8px;background:linear-gradient(90deg,var(--red-dark),var(--red));color:var(--red-ink);padding:8px 8px;padding-top:calc(8px + env(safe-area-inset-top))}
+.chat .top{display:flex;align-items:center;gap:8px;background:linear-gradient(90deg,var(--red-dark),var(--red));color:var(--bar-ink);padding:8px 8px;padding-top:calc(8px + env(safe-area-inset-top))}
 .iconbtn{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;background:var(--putty);color:var(--ink);border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);font:700 20px/1 var(--pixel);cursor:pointer;flex:none}
 .chat .who{flex:1;min-width:0;background:none;border:0;color:inherit;text-align:left;cursor:pointer;padding:0}
 .chat .who b{display:block;font-family:var(--pixel);font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -175,6 +175,35 @@ details.more > div{padding:0 12px 12px}
 .toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--putty);color:var(--ink);font-family:var(--pixel);font-weight:700;padding:10px 16px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);box-shadow:4px 4px 0 var(--red);max-width:92vw;text-align:center}
 .toast.show{opacity:1}
 .spin{padding:40px 0;text-align:center;font-family:var(--pixel);color:var(--muted)}
+/* photos + profiles */
+.av{width:28px;height:28px;flex:none;object-fit:cover;display:inline-flex;align-items:center;justify-content:center;font:700 14px/1 var(--pixel);border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);background:#d9d2c5;overflow:hidden}
+img.av{display:block}
+.av.md{width:44px;height:44px;font-size:20px}
+.av.lg{width:112px;height:112px;font-size:50px;border:3px solid var(--paper);box-shadow:3px 3px 0 var(--shadow)}
+.pbanner{height:92px;margin:-14px -12px 0;border-bottom:2px solid var(--shadow)}
+.phead{display:flex;align-items:flex-end;gap:12px;margin-top:-50px;position:relative}
+.phead .who{min-width:0;padding-bottom:2px}
+.phead .who b{display:block;font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:30px;line-height:1;overflow-wrap:anywhere}
+.phead .who span{font-family:var(--pixel);font-size:15px;color:#4f4942}
+.ptitle{font-family:var(--pixel);font-weight:700;font-size:16px;margin:16px 0 8px}
+.song iframe{display:block;width:100%;border:0;border-radius:10px;background:#111}
+.top8{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.top8 button{min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 4px;background:var(--paper);color:var(--ink);border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);cursor:pointer}
+.top8 .av{width:100%;height:auto;aspect-ratio:1/1;font-size:24px}
+.top8 span{max-width:100%;font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.photorow{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.photorow .stack{flex:1;min-width:0}
+.photorow .av.lg{width:96px;height:96px}
+.swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+.sw{min-width:0;display:flex;flex-direction:column;gap:3px;padding:3px 3px 5px;background:var(--paper);color:var(--ink);border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);cursor:pointer;font:700 11px/1.1 var(--body);text-align:center}
+.sw i{display:block;height:30px}
+.sw i + i{height:7px}
+.sw[aria-pressed=true]{outline:3px solid var(--ink);outline-offset:1px}
+.t8row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #d8d0c3}
+.t8row .nm{flex:1;min-width:0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.t8row .iconbtn{min-width:40px;min-height:40px;font-size:16px}
+.t8row .iconbtn:disabled{opacity:.35}
+input[type=color]{width:64px;flex:none;padding:3px;cursor:pointer}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 </style>
 </head>
@@ -226,7 +255,77 @@ function add(el, c){
   el.append(c instanceof Node ? c : document.createTextNode(String(c)));
 }
 function num(n){ return '#' + String(n || 0).padStart(6, '0'); }
-function view(node, opts){ var v = $('view'); v.className = opts && opts.notabs ? 'notabs' : ''; v.replaceChildren(node); }
+function view(node, opts){ var v = $('view'); v.className = opts && opts.notabs ? 'notabs' : ''; v.replaceChildren(node); applyMyTheme(); }
+
+// ---------- looks (themes), photos and songs ----------
+// a = main color, d = dark color, p = window color, w = paper color, b = profile banner
+var THEMES = {
+  classic:  { n: 'Classic',   a: '#e5322b', d: '#8f1712', p: '#cdc6ba', w: '#fffdf8', b: 'repeating-linear-gradient(-45deg,#0d0c0b 0 14px,#221d1b 14px 28px)' },
+  midnight: { n: 'Midnight',  a: '#5b6cff', d: '#1f2a8f', p: '#c9cbe0', w: '#fbfbff', b: 'radial-gradient(circle at 20% 30%,#fff 0 1.5px,transparent 2px) 0 0/38px 38px,radial-gradient(circle at 70% 70%,#cfd5ff 0 1px,transparent 1.6px) 0 0/26px 26px,linear-gradient(160deg,#0b0f2e,#1f2a8f)' },
+  bubblegum:{ n: 'Bubblegum', a: '#ff4f9e', d: '#a3125a', p: '#f2cfe0', w: '#fff7fb', b: 'radial-gradient(circle,#ffd1e6 0 6px,transparent 7px) 0 0/28px 28px,#ff7ab6' },
+  toxic:    { n: 'Toxic',     a: '#2fbf3b', d: '#10561a', p: '#cfe3c6', w: '#fbfff8', b: 'repeating-linear-gradient(45deg,#111 0 16px,#9bff3c 16px 32px)' },
+  ocean:    { n: 'Ocean',     a: '#1597b0', d: '#0b4a57', p: '#c4dde2', w: '#f7fdff', b: 'radial-gradient(ellipse at 50% 120%,#7fe3f0 0 30%,transparent 31%) 0 0/60px 30px,linear-gradient(180deg,#0b4a57,#1597b0)' },
+  coffin:   { n: 'Coffin',    a: '#9b1c1c', d: '#2a0606', p: '#bdb4b4', w: '#f8f4f4', b: 'linear-gradient(90deg,transparent 46%,#5a0d0d 46% 54%,transparent 54%) 0 0/40px 40px,linear-gradient(0deg,transparent 58%,#5a0d0d 58% 66%,transparent 66%) 0 0/40px 40px,#0f0a0a' },
+  sunset:   { n: 'Sunset',    a: '#f0682a', d: '#8a2a0c', p: '#efd5c3', w: '#fffaf6', b: 'linear-gradient(180deg,#2b1055 0%,#d53369 55%,#f9a826 100%)' },
+  lavender: { n: 'Lavender',  a: '#8e63ce', d: '#4a2a7e', p: '#dcd1ee', w: '#fcfaff', b: 'repeating-radial-gradient(circle at 0 0,#b79be6 0 10px,#9a75d6 10px 20px)' },
+  gold:     { n: 'Gold',      a: '#d4a017', d: '#6b4e00', p: '#e6dbb9', w: '#fffdf5', b: 'repeating-linear-gradient(-45deg,#0d0c0b 0 12px,#d4a017 12px 14px,#0d0c0b 14px 26px)' },
+  denim:    { n: 'Denim',     a: '#4a6fa5', d: '#1e3354', p: '#c8d0dc', w: '#f8fafd', b: 'repeating-linear-gradient(45deg,rgba(255,255,255,.08) 0 2px,transparent 2px 6px),repeating-linear-gradient(-45deg,rgba(0,0,0,.18) 0 2px,transparent 2px 7px),#3b5b88' }
+};
+var LOOK_VARS = ['--red', '--red-dark', '--red-hi', '--red-ink', '--bar-ink', '--putty', '--paper'];
+function hx(c){ c = String(c).replace('#', ''); return [0, 2, 4].map(function(i){ return parseInt(c.slice(i, i + 2), 16) || 0; }); }
+function toHex(a){ return '#' + a.map(function(v){ return Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0'); }).join(''); }
+function mixC(c, w, t){ var a = hx(c), b = hx(w); return toHex(a.map(function(v, i){ return v + (b[i] - v) * t; })); }
+function lum(c){ var a = hx(c).map(function(v){ v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * a[0] + .7152 * a[1] + .0722 * a[2]; }
+function lookVars(theme, accent){
+  var T = THEMES[theme] || THEMES.classic;
+  var own = /^#[0-9a-f]{6}$/i.test(accent || '');
+  var a = own ? accent : T.a, d = own ? mixC(accent, '#000000', .55) : T.d;
+  return { '--red': a, '--red-dark': d, '--red-hi': mixC(a, '#ffffff', .45), '--red-ink': lum(a) > .22 ? '#0d0c0b' : '#fff7f2',
+           '--bar-ink': lum(d) > .22 ? '#0d0c0b' : '#fff7f2', '--putty': T.p, '--paper': T.w };
+}
+function lookStyle(theme, accent){ var v = lookVars(theme, accent); return LOOK_VARS.map(function(k){ return k + ':' + v[k]; }).join(';'); }
+// Your look colors your whole app (not the boss page).
+function applyMyTheme(){
+  var st = document.documentElement.style;
+  if (!S.me || location.hash === '#boss') { LOOK_VARS.forEach(function(k){ st.removeProperty(k); }); return; }
+  var v = lookVars(S.me.theme, S.me.accent);
+  LOOK_VARS.forEach(function(k){ st.setProperty(k, v[k]); });
+}
+var TINTS = ['#e5322b', '#5b6cff', '#ff4f9e', '#2fbf3b', '#1597b0', '#8e63ce', '#d4a017', '#4a6fa5', '#f0682a'];
+function avatar(u, cls){
+  var c = 'av' + (cls ? ' ' + cls : '');
+  var tint = TINTS[((u && u.id) || 0) % TINTS.length];
+  var letter = h('span', { class: c, 'aria-hidden': 'true', style: 'background:' + tint + ';color:' + (lum(tint) > .22 ? '#0d0c0b' : '#fff') }, ((u && u.screen_name) || '?').charAt(0).toUpperCase());
+  if (!u || !(u.photo_v > 0)) return letter;
+  var img = h('img', { class: c, src: '/api/app?photo=' + u.id + '&v=' + u.photo_v, alt: '', loading: 'lazy', decoding: 'async' });
+  img.addEventListener('error', function(){ img.replaceWith(letter); });
+  return img;
+}
+function songEmbed(url){
+  var m;
+  if ((m = /^https:\/\/open\.spotify\.com\/(track|album|playlist|episode|artist|show)\/([A-Za-z0-9]+)$/.exec(url || '')))
+    return h('iframe', { src: 'https://open.spotify.com/embed/' + m[1] + '/' + m[2], height: m[1] === 'track' || m[1] === 'episode' ? '152' : '352', loading: 'lazy', allow: 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture', title: 'Profile song' });
+  if ((m = /^https:\/\/www\.youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})$/.exec(url || '')))
+    return h('iframe', { src: 'https://www.youtube-nocookie.com/embed/' + m[1], style: 'aspect-ratio:16/9;height:auto', loading: 'lazy', allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share', allowfullscreen: true, referrerpolicy: 'strict-origin-when-cross-origin', title: 'Profile song' });
+  if (/^https:\/\/soundcloud\.com\/[A-Za-z0-9_\/-]+$/.test(url || ''))
+    return h('iframe', { src: 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(url) + '&auto_play=false&hide_related=true&show_comments=false&show_reposts=false&visual=false', height: '166', loading: 'lazy', allow: 'autoplay', title: 'Profile song' });
+  return null;
+}
+// Crops a picked photo to a 400x400 square JPEG so uploads stay small.
+async function shrinkPhoto(file){
+  var url = URL.createObjectURL(file);
+  try {
+    var img = await new Promise(function(res, rej){ var i = new Image(); i.onload = function(){ res(i); }; i.onerror = rej; i.src = url; });
+    var w = img.naturalWidth, ht = img.naturalHeight, side = Math.min(w, ht);
+    if (!side) throw new Error('empty');
+    var c = document.createElement('canvas'); c.width = c.height = 400;
+    var x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, 400, 400);
+    x.drawImage(img, (w - side) / 2, (ht - side) / 2, side, side, 0, 0, 400, 400);
+    var q = .86, d = c.toDataURL('image/jpeg', q);
+    while (d.length > 320000 && q > .4) { q -= .15; d = c.toDataURL('image/jpeg', q); }
+    return d;
+  } finally { URL.revokeObjectURL(url); }
+}
 function win(title, body, o){
   o = o || {};
   return h('div', { class: 'win ' + (o.cls || '') },
@@ -306,9 +405,9 @@ window.addEventListener('popstate', function(){
   if (stack.length) { guard = true; try { history.pushState({ ff: 1 }, ''); } catch (e) {} }
 });
 function lockBody(){ document.body.classList.toggle('locked', !$('chat').hidden || !$('sheet').hidden); }
-function sheet(title, body){
+function sheet(title, body, opts){
   var s = $('sheet');
-  var box = h('div', { class: 'box', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
+  var box = h('div', { class: 'box', role: 'dialog', 'aria-modal': 'true', 'aria-label': title, style: (opts && opts.style) || null },
     h('div', { class: 'bar' }, h('span', { class: 'ttl' }, title), h('button', { class: 'iconbtn', type: 'button', style: 'min-width:36px;min-height:30px;font-size:15px', 'aria-label': 'Close', onclick: back }, '×')),
     h('div', { class: 'pane' }, body));
   s.replaceChildren(box);
@@ -372,6 +471,7 @@ function setBadge(n){
   document.title = n ? '(' + n + ') FrickFake' : 'FrickFake';
 }
 function updateMeChip(){
+  applyMyTheme();
   var c = $('mechip');
   if (!S.me) { c.hidden = true; return; }
   c.hidden = false;
@@ -472,7 +572,8 @@ function viewPending(){
       h('p', { class: 'sub' }, 'A real human checks every new member before they can add buddies or chat. That’s how the fakes stay out. This page updates by itself, so you can close it and come back.'),
       h('div', { class: 'grid2' }, h('button', { class: 'btn', type: 'button', onclick: share }, 'Invite friends'), h('button', { class: 'btn grey', type: 'button', onclick: logout }, 'Log out'))
     ]),
-    profileForm('While you wait, fill in your profile')
+    profileForm('While you wait, fill in your profile'),
+    lookForm()
   ), { notabs: true });
   S.unreadTotal = -1;
   schedule();
@@ -539,8 +640,9 @@ function renderBuddyList(){
     S.incoming.forEach(function(q){
       var mutual = q.mutual && q.mutual.length ? ' You both know ' + q.mutual.slice(0, 2).join(' and ') + (q.mutual.length > 2 ? ' + ' + (q.mutual.length - 2) + ' more' : '') + '.' : '';
       kids.push(h('div', { class: 'ask' },
-        h('button', { class: 'who', type: 'button', onclick: function(){ openProfile(q.id); } }, q.screen_name + ' ' + num(q.number)),
-        ' wants to add you. Verified human' + (q.city ? ' from ' + q.city : '') + '.' + mutual,
+        h('div', { style: 'display:flex;gap:10px;align-items:flex-start' }, avatar(q, 'md'), h('div', null,
+          h('button', { class: 'who', type: 'button', onclick: function(){ openProfile(q.id); } }, q.screen_name + ' ' + num(q.number)),
+          ' wants to add you. Verified human' + (q.city ? ' from ' + q.city : '') + '.' + mutual)),
         h('div', { class: 'acts' },
           h('button', { class: 'btn green', type: 'button', onclick: function(e){ respond(q, true, e.currentTarget); } }, 'Allow'),
           h('button', { class: 'btn grey', type: 'button', onclick: function(e){ respond(q, false, e.currentTarget); } }, 'Nope'))));
@@ -564,7 +666,7 @@ function renderBuddyList(){
 function palRow(b){
   var st = b.presence === 'offline' ? (b.last_seen ? 'Last on ' + ago(b.last_seen) : 'Offline') : LABEL[b.presence] + (b.away_msg ? ': ' + b.away_msg : '');
   return h('button', { class: 'pal', type: 'button', 'aria-label': 'Chat with ' + b.screen_name + ', ' + st + (b.unread ? ', ' + b.unread + ' new' : ''), onclick: function(){ openChat(b); } },
-    h('i', { class: 'dot ' + b.presence }), h('span', { class: 'nm' }, b.screen_name), h('span', { class: 'st' }, st),
+    h('i', { class: 'dot ' + b.presence }), avatar(b), h('span', { class: 'nm' }, b.screen_name), h('span', { class: 'st' }, st),
     b.unread ? h('span', { class: 'badge' }, b.unread) : null);
 }
 async function respond(q, allow, btn){
@@ -720,13 +822,20 @@ async function openProfile(id){
         h('button', { class: 'btn grey', type: 'button', onclick: function(){ reportUser(p); } }, 'Report')));
     }
     var ints = (p.interests || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+    var T = THEMES[p.theme] || THEMES.classic;
+    var song = p.song ? songEmbed(p.song) : null;
+    var top = p.top8 || [];
     sheet(p.screen_name, h('div', null,
-      h('div', { class: 'numbox', style: 'margin-top:0' }, h('small', null, p.screen_name), h('b', null, num(p.number))),
-      p.presence ? h('p', { class: 'kv' }, h('i', { class: 'dot ' + p.presence, style: 'margin-right:6px' }), LABEL[p.presence] + (p.away_msg ? ': ' + p.away_msg : '')) : null,
-      h('p', { class: 'kv' }, (p.city ? p.city + ' · ' : '') + 'Verified human since ' + new Date(p.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })),
+      h('div', { class: 'pbanner', style: 'background:' + T.b, 'aria-hidden': 'true' }),
+      h('div', { class: 'phead' }, avatar(p, 'lg'), h('div', { class: 'who' }, h('b', null, p.screen_name), h('span', null, num(p.number)))),
+      p.presence ? h('p', { class: 'kv', style: 'margin-top:12px' }, h('i', { class: 'dot ' + p.presence, style: 'margin-right:6px' }), LABEL[p.presence] + (p.away_msg ? ': ' + p.away_msg : '')) : null,
+      h('p', { class: 'kv', style: p.presence ? null : 'margin-top:12px' }, (p.city ? p.city + ' · ' : '') + 'Verified human since ' + new Date(p.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })),
       ints.length ? h('div', { class: 'chips' }, ints.map(function(t){ return h('span', { class: 'chip' }, t); })) : null,
       p.bio ? h('p', { class: 'body' }, p.bio) : null,
-      h('div', { class: 'stack', style: 'margin-top:14px' }, acts)));
+      song ? [h('div', { class: 'ptitle' }, '♫ Profile song'), h('div', { class: 'song' }, song)] : null,
+      top.length ? [h('div', { class: 'ptitle' }, p.rel === 'me' ? 'My Top ' + top.length : p.screen_name + '’s Top ' + top.length),
+        h('div', { class: 'top8' }, top.map(function(t){ return h('button', { type: 'button', 'aria-label': 'Open ' + t.screen_name + '’s profile', onclick: function(){ openProfile(t.id); } }, avatar(t), h('span', null, t.screen_name)); }))] : null,
+      h('div', { class: 'stack', style: 'margin-top:16px' }, acts)), { style: lookStyle(p.theme, p.accent) });
   } catch (e) { toast(e.message); }
 }
 
@@ -771,7 +880,7 @@ function postEl(p){
     catch (e) { toast(e.message); }
   });
   var card = h('article', { class: 'card' },
-    h('div', { class: 'hd' }, h('button', { class: 'nm', type: 'button', onclick: function(){ openProfile(p.user_id); } }, p.screen_name), h('span', { class: 'num' }, num(p.number)), h('span', { class: 'when' }, ago(p.created_at))),
+    h('div', { class: 'hd', style: 'align-items:center' }, avatar({ id: p.user_id, screen_name: p.screen_name, photo_v: p.photo_v }), h('button', { class: 'nm', type: 'button', onclick: function(){ openProfile(p.user_id); } }, p.screen_name), h('span', { class: 'num' }, num(p.number)), h('span', { class: 'when' }, ago(p.created_at))),
     h('p', { class: 'body' }, p.body),
     h('div', { class: 'ft' }, realBtn, mine ? h('button', { class: 'linkbtn', type: 'button', style: 'margin-left:auto', onclick: async function(){
       if (!(await confirmSheet('Delete this post?', 'It’ll be gone for everyone.', 'Delete', true))) return;
@@ -820,27 +929,107 @@ function personCard(p){
   setAct(p.rel);
   var ints = (p.interests || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean).slice(0, 6);
   return h('div', { class: 'card' },
-    h('div', { class: 'hd', style: 'align-items:center' }, h('button', { class: 'nm', type: 'button', onclick: function(){ openProfile(p.id); } }, p.screen_name), h('span', { class: 'num' }, num(p.number)), actBtn),
+    h('div', { class: 'hd', style: 'align-items:center' }, avatar(p, 'md'), h('button', { class: 'nm', type: 'button', onclick: function(){ openProfile(p.id); } }, p.screen_name), h('span', { class: 'num' }, num(p.number)), actBtn),
     p.city ? h('div', { class: 'num', style: 'margin-top:2px' }, p.city) : null,
     ints.length ? h('div', { class: 'chips' }, ints.map(function(t){ return h('span', { class: 'chip' }, t); })) : null,
     p.bio ? h('p', { class: 'body', style: 'font-size:15px' }, p.bio.length > 160 ? p.bio.slice(0, 160) + '…' : p.bio) : null);
 }
 
 // ---------- me ----------
+function photoPicker(){
+  var box = h('div', { class: 'photorow' });
+  var file = h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp,image/*', hidden: true, 'aria-label': 'Choose a profile photo' });
+  var pick = h('button', { class: 'btn small', type: 'button', onclick: function(){ file.click(); } });
+  var rm = h('button', { class: 'btn small grey', type: 'button', onclick: async function(){
+    if (!(await confirmSheet('Remove your photo?', 'Your profile will show your first letter instead.', 'Remove'))) return;
+    try { var r = await api('remove_photo'); S.me = r.me; draw(); toast('Photo removed.'); } catch (e) { toast(e.message); }
+  } }, 'Remove photo');
+  file.addEventListener('change', function(){
+    var f = file.files && file.files[0]; if (!f) return;
+    busy(pick, 'Uploading…', async function(){
+      try {
+        var data;
+        try { data = await shrinkPhoto(f); } catch (e) { throw new Error('That photo type didn’t work. Try a JPG or PNG.'); }
+        var r = await api('set_photo', { photo: data }); S.me = r.me; toast('Photo saved.');
+      } catch (ex) { toast(ex.message); }
+      file.value = '';
+    }).then(draw);
+  });
+  function draw(){
+    pick.textContent = S.me.photo_v > 0 ? 'Change photo' : 'Add a photo';
+    box.replaceChildren(avatar(S.me, 'lg'), h('div', { class: 'stack' }, pick, S.me.photo_v > 0 ? rm : null,
+      h('span', { class: 'opt', style: 'font-size:13px' }, S.me.verified ? 'Only signed-in members can see it.' : 'A clear photo of you helps a real human verify you faster.')), file);
+  }
+  draw();
+  return box;
+}
 function profileForm(title){
   var me = S.me;
   var sn = h('input', { maxlength: '20', autocapitalize: 'off', spellcheck: 'false', value: me.screen_name });
   var city = h('input', { maxlength: '80', value: me.city || '' });
   var ints = h('input', { maxlength: '200', value: me.interests || '', placeholder: 'punk, tarot, dogs, skating' });
   var bio = h('textarea', { maxlength: '300', value: me.bio || '', placeholder: 'A little about you. Keep it real.' });
+  var song = h('input', { type: 'url', inputmode: 'url', maxlength: '400', autocapitalize: 'off', spellcheck: 'false', value: me.song || '', placeholder: 'https://open.spotify.com/track/…' });
   var btn = h('button', { class: 'btn', type: 'submit' }, 'Save profile');
   return win(title, h('form', { onsubmit: function(e){
       e.preventDefault();
       busy(btn, 'Saving…', async function(){
-        try { var r = await api('update_profile', { screen_name: sn.value.trim(), city: city.value, interests: ints.value, bio: bio.value }); S.me = r.me; updateMeChip(); toast('Profile saved.'); }
+        try { var r = await api('update_profile', { screen_name: sn.value.trim(), city: city.value, interests: ints.value, bio: bio.value, song: song.value.trim() }); S.me = r.me; song.value = r.me.song; updateMeChip(); toast('Profile saved.'); }
         catch (ex) { toast(ex.message); }
       });
-    } }, field('Screen name', sn), field('City', city, true), field('Interests', ints, true, 'Separate with commas.'), field('About you', bio, true), btn));
+    } }, photoPicker(), field('Screen name', sn), field('City', city, true), field('Interests', ints, true, 'Separate with commas.'), field('About you', bio, true),
+      field('Profile song', song, true, 'Paste a song link from Spotify, YouTube or SoundCloud. It plays on your profile.'), btn));
+}
+function lookForm(){
+  var wrap = h('div');
+  async function save(data, msg){
+    try { var r = await api('update_profile', data); S.me = r.me; applyMyTheme(); draw(); toast(msg); } catch (e) { toast(e.message); }
+  }
+  function draw(){
+    var me = S.me;
+    var color = h('input', { type: 'color', value: me.accent || (THEMES[me.theme] || THEMES.classic).a, 'aria-label': 'Pick your own color' });
+    color.addEventListener('change', function(){ save({ accent: color.value }, 'Your color is saved.'); });
+    wrap.replaceChildren(h('div', null,
+      h('p', { class: 'sub', style: 'margin-top:0' }, 'Pick a look for your profile. It colors your whole app too. Tap one to try it.'),
+      h('div', { class: 'swatches', role: 'group', 'aria-label': 'Looks' }, Object.keys(THEMES).map(function(k){
+        var T = THEMES[k];
+        return h('button', { class: 'sw', type: 'button', 'aria-pressed': String(me.theme === k), onclick: function(){ save({ theme: k, accent: '' }, T.n + ' look saved.'); } },
+          h('i', { style: 'background:' + T.b }), h('i', { style: 'background:linear-gradient(90deg,' + T.d + ',' + T.a + ')' }), T.n);
+      })),
+      h('div', { class: 'field' }, h('label', null, 'Your own color ', h('span', { class: 'opt' }, '(optional)')),
+        h('div', { class: 'row', style: 'align-items:center' }, color,
+          me.accent ? h('button', { class: 'btn small grey', type: 'button', onclick: function(){ save({ accent: '' }, 'Back to the look’s color.'); } }, 'Use the look’s color') : h('span', { class: 'opt', style: 'font-size:13px' }, 'Swap the main color for any color you want.'))),
+      me.verified ? h('button', { class: 'btn grey', type: 'button', onclick: function(){ openProfile(me.id); } }, 'See my profile') : null));
+  }
+  draw();
+  return win('Make it yours', wrap);
+}
+function top8Form(){
+  var wrap = h('div');
+  function mine(){ return (S.me.top8 || []).filter(function(id){ return S.buddies.some(function(b){ return b.id === id; }); }); }
+  async function save(list, msg){
+    try { var r = await api('update_profile', { top8: list }); S.me = r.me; draw(); toast(msg || 'Top 8 saved.'); } catch (e) { toast(e.message); }
+  }
+  function draw(){
+    var list = mine();
+    var rows = list.map(function(id, i){
+      var b = S.buddies.find(function(x){ return x.id === id; });
+      return h('div', { class: 't8row' }, h('span', { class: 'num', style: 'width:18px;text-align:center' }, String(i + 1)), avatar(b), h('span', { class: 'nm' }, b.screen_name),
+        h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Move ' + b.screen_name + ' up', disabled: i === 0, onclick: function(){ var l = list.slice(); l.splice(i - 1, 0, l.splice(i, 1)[0]); save(l, 'Moved up.'); } }, '↑'),
+        h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Move ' + b.screen_name + ' down', disabled: i === list.length - 1, onclick: function(){ var l = list.slice(); l.splice(i + 1, 0, l.splice(i, 1)[0]); save(l, 'Moved down.'); } }, '↓'),
+        h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Take ' + b.screen_name + ' out of your Top 8', onclick: function(){ save(list.filter(function(x){ return x !== id; }), 'Taken out.'); } }, '×'));
+    });
+    var avail = S.buddies.filter(function(b){ return list.indexOf(b.id) < 0; });
+    var sel = h('select', { 'aria-label': 'Pick a buddy for your Top 8' }, h('option', { value: '' }, avail.length ? 'Pick a buddy…' : 'Everyone’s already in'), avail.map(function(b){ return h('option', { value: String(b.id) }, b.screen_name); }));
+    var addB = h('button', { class: 'btn small', type: 'button', disabled: list.length >= 8 || !avail.length, onclick: function(){ var v = Number(sel.value); if (!v) { sel.focus(); return; } save(list.concat(v), 'Added to your Top 8.'); } }, 'Add');
+    wrap.replaceChildren(h('div', null,
+      h('p', { class: 'sub', style: 'margin-top:0' }, 'Show off up to 8 of your favorite buddies on your profile.'),
+      rows.length ? rows : h('p', { class: 'empty', style: 'padding:2px 0' }, S.buddies.length ? 'Nobody in your Top 8 yet.' : 'Add some buddies first, then put your favorites here.'),
+      S.buddies.length ? h('div', { class: 'row', style: 'margin-top:10px' }, sel, addB) : null,
+      list.length >= 8 ? h('p', { class: 'note' }, 'Your Top 8 is full. Take someone out to add someone else.') : null));
+  }
+  draw();
+  return win('My Top 8', wrap);
 }
 function tabMe(){
   var me = S.me;
@@ -870,6 +1059,8 @@ function tabMe(){
       h('div', { class: 'grid2' }, h('button', { class: 'btn', type: 'button', onclick: share }, 'Invite friends'), h('button', { class: 'btn grey', type: 'button', onclick: function(){ openProfile(me.id); } }, 'See my profile'))
     ]),
     profileForm('My profile'),
+    lookForm(),
+    top8Form(),
     h('details', { class: 'more' }, h('summary', null, 'Put FrickFake on your home screen'), h('div', null,
       h('p', { class: 'sub', style: 'margin-top:0' }, 'Android (Chrome): tap the ⋮ menu, then “Add to Home screen” or “Install app”.'),
       h('p', { class: 'sub' }, 'iPhone (Safari): tap the Share button, then “Add to Home Screen”.'))),
@@ -942,8 +1133,10 @@ async function loadBoss(key){
   async function act(data, msg){ try { await api(data.action, Object.assign({ key: key }, data)); toast(msg); loadBoss(key); } catch (e) { toast(e.message); } }
   var pending = r.pending.length ? r.pending.map(function(u){
     return h('div', { class: 'card' },
+      u.photo ? h('img', { src: u.photo, alt: 'Photo of ' + u.screen_name, style: 'float:right;width:92px;height:92px;object-fit:cover;margin:0 0 8px 10px;border:2px solid var(--lo)' }) : null,
       h('div', { class: 'hd' }, h('b', null, u.screen_name), h('span', { class: 'num' }, num(u.number)), h('span', { class: 'when' }, ago(u.created_at))),
       h('p', { class: 'kv' }, u.email + (u.city ? ' · ' + u.city : '')),
+      u.photo ? null : h('p', { class: 'kv' }, 'No photo yet'),
       u.from_waitlist ? h('p', { class: 'kv' }, 'On the waitlist as “' + (u.waitlist_name || '?') + '”') : h('p', { class: 'kv' }, 'Signed up in the app (not on the waitlist)'),
       u.why ? h('p', { class: 'kv' }, 'Why they quit fake social: “' + u.why + '”') : null,
       u.interests ? h('p', { class: 'kv' }, 'Interests: ' + u.interests) : null,

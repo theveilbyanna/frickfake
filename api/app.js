@@ -12,6 +12,10 @@ const STATUSES = ['free', 'away', 'dnd', 'invisible'];
 const RESERVED = new Set(['admin', 'frickfake', 'support', 'moderator', 'mod', 'official', 'staff', 'root', 'system', 'help']);
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/;
 const SN_RE = /^[A-Za-z0-9_.-]{3,20}$/;
+// Profile looks members can pick (the app has the colors for each one).
+const THEMES = ['classic', 'midnight', 'bubblegum', 'toxic', 'ocean', 'coffin', 'sunset', 'lavender', 'gold', 'denim'];
+const ACCENT_RE = /^#[0-9a-f]{6}$/i;
+const PHOTO_MAX = 250000; // bytes, after the app shrinks it to 400x400
 // Same admin key as api/admin.js (only its SHA-256 is stored). FF_ADMIN_KEY in Vercel also works.
 const ADMIN_KEY_SHA256S = [
   '049e2ae46c9c007df49a21f695ba0289026e3c76d4840cfbe2dbb6ba8d7b2880', // original key
@@ -97,11 +101,56 @@ async function currentUser(ctx) {
   return u;
 }
 
+// photo_v counts up each time a photo changes; it goes negative when the photo is removed.
+const pv = u => Math.max(Number(u.photo_v) || 0, 0);
+const idList = s => [...new Set(String(s || '').split(',').map(x => int(x)).filter(Boolean))].slice(0, 8);
+
 const meOut = u => ({
   id: u.id, number: u.number, screen_name: u.screen_name, email: u.email,
   city: u.city, interests: u.interests, bio: u.bio, status: u.status, away_msg: u.away_msg,
-  verified: u.verified, from_waitlist: u.from_waitlist, created_at: u.created_at
+  verified: u.verified, from_waitlist: u.from_waitlist, created_at: u.created_at,
+  photo_v: pv(u), theme: u.theme || 'classic', accent: u.accent || '', song: u.song || '', top8: idList(u.top8)
 });
+
+// Accepts Spotify, YouTube and SoundCloud links and stores a clean copy.
+function songNorm(raw) {
+  const s = clean(raw, 400);
+  if (!s) return '';
+  const bad = oops('Paste a song link from Spotify, YouTube or SoundCloud.', 400, 'song');
+  let u;
+  try { u = new URL(/^https?:\/\//i.test(s) ? s : 'https://' + s); } catch { throw bad; }
+  const host = u.hostname.toLowerCase().replace(/^(www|m)\./, '');
+  if (host === 'open.spotify.com') {
+    const m = u.pathname.match(/^\/(?:intl-[a-z]{2}(?:-[a-z]{2})?\/)?(track|album|playlist|episode|artist|show)\/([A-Za-z0-9]{10,40})/);
+    if (m) return `https://open.spotify.com/${m[1]}/${m[2]}`;
+  }
+  if (host === 'youtube.com' || host === 'music.youtube.com') {
+    let id = u.searchParams.get('v');
+    if (!id) { const m = u.pathname.match(/^\/(?:shorts|embed|live)\/([A-Za-z0-9_-]{11})/); if (m) id = m[1]; }
+    if (id && /^[A-Za-z0-9_-]{11}$/.test(id)) return `https://www.youtube.com/watch?v=${id}`;
+  }
+  if (host === 'youtu.be') {
+    const id = u.pathname.slice(1).split('/')[0];
+    if (/^[A-Za-z0-9_-]{11}$/.test(id)) return `https://www.youtube.com/watch?v=${id}`;
+  }
+  if (host === 'soundcloud.com') {
+    const p = u.pathname.replace(/\/+$/, '');
+    if (/^\/[A-Za-z0-9_-]+\/(?:sets\/)?[A-Za-z0-9_-]+$/.test(p)) return `https://soundcloud.com${p}`;
+  }
+  throw bad;
+}
+
+// When two people stop being buddies, they come out of each other's Top 8.
+async function dropFromTop8(sql, a, b) {
+  await sql`UPDATE ff_users SET top8 = COALESCE(array_to_string(array_remove(string_to_array(NULLIF(top8, ''), ','), ${String(b)}), ','), '') WHERE id = ${a}`;
+  await sql`UPDATE ff_users SET top8 = COALESCE(array_to_string(array_remove(string_to_array(NULLIF(top8, ''), ','), ${String(a)}), ','), '') WHERE id = ${b}`;
+}
+
+async function buddyIds(sql, id) {
+  const rows = await sql`SELECT CASE WHEN from_id = ${id} THEN to_id ELSE from_id END AS other
+                         FROM ff_buddies WHERE state = 'accepted' AND (from_id = ${id} OR to_id = ${id})`;
+  return new Set(rows.map(r => r.other));
+}
 
 // The buddy row between two people, whichever way it was sent.
 async function pair(sql, a, b) {
@@ -259,7 +308,7 @@ const USER = {
     const id = me.id;
 
     const buddies = await sql`
-      SELECT u.id, u.number, u.screen_name, u.city, u.status, u.away_msg,
+      SELECT u.id, u.number, u.screen_name, u.city, u.status, u.away_msg, GREATEST(u.photo_v, 0) AS photo_v,
         CASE WHEN u.status = 'invisible' OR u.last_seen IS NULL OR u.last_seen < now() - interval '150 seconds'
              THEN 'offline' ELSE u.status END AS presence,
         CASE WHEN u.status = 'invisible' THEN NULL ELSE u.last_seen END AS last_seen,
@@ -268,12 +317,12 @@ const USER = {
       WHERE b.state = 'accepted' AND (b.from_id = ${id} OR b.to_id = ${id}) AND NOT u.banned
       ORDER BY u.sn_key`;
     const buddyOut = buddies.map(x => ({
-      id: x.id, number: x.number, screen_name: x.screen_name, city: x.city, presence: x.presence,
+      id: x.id, number: x.number, screen_name: x.screen_name, city: x.city, presence: x.presence, photo_v: x.photo_v,
       away_msg: x.presence === 'away' || x.presence === 'dnd' ? x.away_msg : '', last_seen: x.last_seen, unread: x.unread
     }));
 
     const incoming = await sql`
-      SELECT r.id AS req_id, u.id, u.number, u.screen_name, u.city, u.interests,
+      SELECT r.id AS req_id, u.id, u.number, u.screen_name, u.city, u.interests, GREATEST(u.photo_v, 0) AS photo_v,
         (SELECT COALESCE(array_agg(m.screen_name ORDER BY m.sn_key), '{}')
            FROM ff_buddies b2 JOIN ff_users m ON m.id = CASE WHEN b2.from_id = u.id THEN b2.to_id ELSE b2.from_id END
            WHERE b2.state = 'accepted' AND (b2.from_id = u.id OR b2.to_id = u.id) AND NOT m.banned
@@ -328,16 +377,53 @@ const USER = {
       next.status = b.status;
     }
     if (b.away_msg !== undefined) next.away_msg = clean(b.away_msg, 120);
+    next.theme = me.theme || 'classic'; next.accent = me.accent || ''; next.song = me.song || ''; next.top8 = me.top8 || '';
+    if (b.theme !== undefined) {
+      if (!THEMES.includes(b.theme)) throw oops('Pick a look from the list.', 400, 'theme');
+      next.theme = b.theme;
+    }
+    if (b.accent !== undefined) {
+      const a = clean(b.accent, 7).toLowerCase();
+      if (a && !ACCENT_RE.test(a)) throw oops('That color didn’t work. Pick another.', 400, 'accent');
+      next.accent = a;
+    }
+    if (b.song !== undefined) next.song = songNorm(b.song);
+    if (b.top8 !== undefined) {
+      const want = Array.isArray(b.top8) ? idList(b.top8.join(',')) : [];
+      const mine = await buddyIds(sql, me.id);
+      next.top8 = want.filter(id => mine.has(id)).join(',');
+    }
     let rows;
     try {
       rows = await sql`UPDATE ff_users SET screen_name = ${next.screen_name}, sn_key = ${next.screen_name.toLowerCase()},
           city = ${next.city}, interests = ${next.interests}, bio = ${next.bio}, status = ${next.status},
-          away_msg = ${next.away_msg}, last_seen = now()
+          away_msg = ${next.away_msg}, theme = ${next.theme}, accent = ${next.accent}, song = ${next.song},
+          top8 = ${next.top8}, last_seen = now()
         WHERE id = ${me.id} RETURNING *`;
     } catch (e) {
       if (uniqueErr(e) === 'screen_name') throw oops('That screen name is taken. Try another.', 400, 'screen_name');
       throw e;
     }
+    return { me: meOut(rows[0]) };
+  },
+
+  async set_photo(ctx) {
+    const { sql, me, body: b } = ctx;
+    const m = String(b.photo || '').match(/^data:image\/jpeg;base64,([A-Za-z0-9+/]+={0,2})$/);
+    const buf = m ? Buffer.from(m[1], 'base64') : null;
+    if (!buf || buf.length < 400 || buf.length > PHOTO_MAX || buf[0] !== 0xff || buf[1] !== 0xd8 || buf[2] !== 0xff) {
+      throw oops('That photo didn’t work. Try a different one.', 400, 'photo');
+    }
+    await sql`INSERT INTO ff_photos (user_id, data) VALUES (${me.id}, ${buf.toString('base64')})
+              ON CONFLICT (user_id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`;
+    const rows = await sql`UPDATE ff_users SET photo_v = ABS(photo_v) + 1 WHERE id = ${me.id} RETURNING *`;
+    return { me: meOut(rows[0]) };
+  },
+
+  async remove_photo(ctx) {
+    const { sql, me } = ctx;
+    await sql`DELETE FROM ff_photos WHERE user_id = ${me.id}`;
+    const rows = await sql`UPDATE ff_users SET photo_v = -ABS(photo_v) WHERE id = ${me.id} RETURNING *`;
     return { me: meOut(rows[0]) };
   },
 
@@ -422,6 +508,7 @@ const VERIFIED = {
     const me = ctx.me.id;
     await ctx.sql`DELETE FROM ff_buddies WHERE LEAST(from_id, to_id) = LEAST(${me}::int, ${other}::int)
                   AND GREATEST(from_id, to_id) = GREATEST(${me}::int, ${other}::int)`;
+    await dropFromTop8(ctx.sql, me, other);
     return {};
   },
 
@@ -432,6 +519,7 @@ const VERIFIED = {
     await ctx.sql`INSERT INTO ff_blocks (blocker_id, blocked_id) VALUES (${me}, ${other}) ON CONFLICT DO NOTHING`;
     await ctx.sql`DELETE FROM ff_buddies WHERE LEAST(from_id, to_id) = LEAST(${me}::int, ${other}::int)
                   AND GREATEST(from_id, to_id) = GREATEST(${me}::int, ${other}::int)`;
+    await dropFromTop8(ctx.sql, me, other);
     return {};
   },
 
@@ -482,7 +570,7 @@ const VERIFIED = {
     if (c >= 12) throw oops('That’s a lot of posts for one hour. Take a breather.', 429, 'slow');
     const rows = await sql`INSERT INTO ff_posts (user_id, body) VALUES (${me.id}, ${text}) RETURNING id, body, created_at`;
     const p = rows[0];
-    return { post: { ...p, user_id: me.id, number: me.number, screen_name: me.screen_name, reals: 0, mine_real: false } };
+    return { post: { ...p, user_id: me.id, number: me.number, screen_name: me.screen_name, photo_v: pv(me), reals: 0, mine_real: false } };
   },
 
   async feed(ctx) {
@@ -490,7 +578,7 @@ const VERIFIED = {
     const before = int(b.before) || 2147483646;
     const only = int(b.user);
     const rows = await sql`
-      SELECT p.id, p.body, p.created_at, u.id AS user_id, u.number, u.screen_name,
+      SELECT p.id, p.body, p.created_at, u.id AS user_id, u.number, u.screen_name, GREATEST(u.photo_v, 0) AS photo_v,
         (SELECT COUNT(*)::int FROM ff_reacts r WHERE r.post_id = p.id) AS reals,
         EXISTS (SELECT 1 FROM ff_reacts r WHERE r.post_id = p.id AND r.user_id = ${me.id}) AS mine_real
       FROM ff_posts p JOIN ff_users u ON u.id = p.user_id
@@ -533,13 +621,13 @@ const VERIFIED = {
     const city = clean(b.city, 80);
     let rows;
     if (/^#?\d{1,9}$/.test(q)) {
-      rows = await sql`SELECT id, number, screen_name, city, interests, bio, created_at FROM ff_users u
+      rows = await sql`SELECT id, number, screen_name, city, interests, bio, created_at, GREATEST(photo_v, 0) AS photo_v FROM ff_users u
         WHERE u.number = ${Number(q.replace('#', ''))} AND u.verified AND NOT u.banned AND u.id <> ${me.id}
           AND NOT EXISTS (SELECT 1 FROM ff_blocks k WHERE (k.blocker_id = ${me.id} AND k.blocked_id = u.id) OR (k.blocker_id = u.id AND k.blocked_id = ${me.id}))`;
     } else {
       const qp = likePat(q);
       const cp = likePat(city);
-      rows = await sql`SELECT id, number, screen_name, city, interests, bio, created_at FROM ff_users u
+      rows = await sql`SELECT id, number, screen_name, city, interests, bio, created_at, GREATEST(photo_v, 0) AS photo_v FROM ff_users u
         WHERE u.verified AND NOT u.banned AND u.id <> ${me.id}
           AND NOT EXISTS (SELECT 1 FROM ff_blocks k WHERE (k.blocker_id = ${me.id} AND k.blocked_id = u.id) OR (k.blocker_id = u.id AND k.blocked_id = ${me.id}))
           AND (${q}::text = '' OR u.sn_key LIKE ${qp} OR lower(u.interests) LIKE ${qp} OR lower(u.bio) LIKE ${qp} OR lower(u.city) LIKE ${qp})
@@ -563,8 +651,18 @@ const VERIFIED = {
     const rel = u.id === me.id ? 'me' : relFor(p, me.id);
     const out = {
       id: u.id, number: u.number, screen_name: u.screen_name, city: u.city, interests: u.interests, bio: u.bio,
-      created_at: u.created_at, rel, req_id: p ? p.id : null, blocked: bl.iBlocked
+      created_at: u.created_at, rel, req_id: p ? p.id : null, blocked: bl.iBlocked,
+      photo_v: pv(u), theme: u.theme || 'classic', accent: u.accent || '', song: u.song || '', top8: []
     };
+    const top = idList(u.top8);
+    if (top.length) {
+      const rows8 = await sql`SELECT t.id, t.number, t.screen_name, GREATEST(t.photo_v, 0) AS photo_v FROM ff_users t
+        WHERE t.id = ANY(${top}::int[]) AND t.verified AND NOT t.banned
+          AND EXISTS (SELECT 1 FROM ff_buddies bb WHERE bb.state = 'accepted'
+                      AND LEAST(bb.from_id, bb.to_id) = LEAST(t.id, ${u.id}::int) AND GREATEST(bb.from_id, bb.to_id) = GREATEST(t.id, ${u.id}::int))
+          AND NOT EXISTS (SELECT 1 FROM ff_blocks k WHERE (k.blocker_id = ${me.id} AND k.blocked_id = t.id) OR (k.blocker_id = t.id AND k.blocked_id = ${me.id}))`;
+      out.top8 = top.map(id => rows8.find(r => r.id === id)).filter(Boolean);
+    }
     if (rel === 'buddies') {
       const live = u.status !== 'invisible' && u.last_seen && Date.now() - new Date(u.last_seen).getTime() < 150000;
       out.presence = live ? u.status : 'offline';
@@ -586,8 +684,9 @@ const ADMIN = {
       FROM ff_users`;
     const [{ messages }] = await sql`SELECT COUNT(*)::int AS messages FROM ff_messages`;
     const [{ posts }] = await sql`SELECT COUNT(*)::int AS posts FROM ff_posts`;
-    const pending = await sql`SELECT id, number, screen_name, email, city, interests, bio, why, waitlist_name, from_waitlist, created_at
-      FROM ff_users WHERE NOT verified AND NOT banned ORDER BY id`;
+    const pending = await sql`SELECT u.id, u.number, u.screen_name, u.email, u.city, u.interests, u.bio, u.why, u.waitlist_name,
+        u.from_waitlist, u.created_at, CASE WHEN ph.data IS NULL THEN '' ELSE 'data:image/jpeg;base64,' || ph.data END AS photo
+      FROM ff_users u LEFT JOIN ff_photos ph ON ph.user_id = u.id WHERE NOT u.verified AND NOT u.banned ORDER BY u.id`;
     const members = await sql`SELECT id, number, screen_name, email, city, verified, banned, last_seen, created_at
       FROM ff_users ORDER BY number LIMIT 2000`;
     const reports = await sql`SELECT r.id, r.reason, r.created_at, t.id AS target_id, t.screen_name AS target_name,
@@ -627,9 +726,36 @@ const ADMIN = {
   }
 };
 
+// GET /api/app?photo=<member id>&v=<version>: a member's photo, only for signed-in members who can see them.
+async function servePhoto(ctx, idRaw) {
+  const { sql, res } = ctx;
+  const nope = (code) => { res.statusCode = code; res.setHeader('Cache-Control', 'no-store'); return res.end(); };
+  let me;
+  try { me = await currentUser(ctx); } catch { return nope(403); }
+  if (!me) return nope(401);
+  const target = int(idRaw);
+  if (!target) return nope(404);
+  if (target !== me.id) {
+    if (!me.verified) return nope(403);
+    const t = (await sql`SELECT verified, banned FROM ff_users WHERE id = ${target}`)[0];
+    if (!t || !t.verified || t.banned) return nope(404);
+    const bl = await blockedEither(sql, me.id, target);
+    if (bl.iBlocked || bl.theyBlocked) return nope(404);
+  }
+  const rows = await sql`SELECT data FROM ff_photos WHERE user_id = ${target}`;
+  if (!rows.length) return nope(404);
+  const buf = Buffer.from(rows[0].data, 'base64');
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'image/jpeg');
+  res.setHeader('Content-Length', String(buf.length));
+  res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
+  return res.end(buf);
+}
+
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
-  if (req.method !== 'POST') {
+  const photoId = req.method === 'GET' ? new URL(req.url || '/', 'http://x').searchParams.get('photo') : null;
+  if (req.method !== 'POST' && !photoId) {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ ok: false, error: 'Use POST.' });
   }
@@ -646,6 +772,10 @@ export default async function handler(req, res) {
   }
 
   const ctx = { req, res, sql, body };
+  if (photoId) {
+    try { return await servePhoto(ctx, photoId); }
+    catch (e) { console.error('photo failed', String((e && e.message) || e)); res.statusCode = 500; return res.end(); }
+  }
   try {
     let out;
     if (Object.hasOwn(PUBLIC, action)) out = await PUBLIC[action](ctx);
