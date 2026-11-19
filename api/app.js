@@ -42,11 +42,21 @@ async function checkPw(pw, stored) {
   return got.length === want.length && timingSafeEqual(got, want);
 }
 
+// Forgives phone-keyboard slips: extra spaces, quotes or backticks, a trailing period, a capital first letter.
+function keyVariants(key) {
+  const raw = String(key ?? '');
+  const t = raw.trim();
+  const n = t.replace(/[`'"\u201c\u201d\u2018\u2019\s]/g, '').replace(/[.,;:!]+$/, '');
+  return [...new Set([raw, t, n, n.toLowerCase()])].filter(Boolean);
+}
+
 function adminOk(key) {
   if (!key) return false;
-  const a = Buffer.from(sha(key));
   const ok = [...ADMIN_KEY_SHA256S, process.env.FF_ADMIN_KEY ? sha(process.env.FF_ADMIN_KEY) : null].filter(Boolean);
-  return ok.some(h => { const b = Buffer.from(h); return a.length === b.length && timingSafeEqual(a, b); });
+  return keyVariants(key).some(k => {
+    const a = Buffer.from(sha(k));
+    return ok.some(h => { const b = Buffer.from(h); return a.length === b.length && timingSafeEqual(a, b); });
+  });
 }
 
 function readCookie(req, name) {

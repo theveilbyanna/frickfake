@@ -911,7 +911,9 @@ function viewBoss(){
   stopPoll(); closeAll(); setTabs(false);
   var key = store('ff_boss');
   if (!key) {
-    var inp = h('input', { type: 'password', autocomplete: 'off', 'aria-label': 'Admin key' });
+    var inp = h('input', { type: 'password', autocomplete: 'off', autocapitalize: 'none', autocorrect: 'off', spellcheck: 'false', 'aria-label': 'Admin key' });
+    var show = h('label', { class: 'note', style: 'display:flex;align-items:center;gap:8px;margin:-4px 0 12px' },
+      h('input', { type: 'checkbox', onchange: function(){ inp.type = this.checked ? 'text' : 'password'; } }), 'Show what I typed');
     var err = h('p', { class: 'err', role: 'alert' });
     var btn = h('button', { class: 'btn', type: 'submit' }, 'Open boss mode');
     view(h('div', null, win('Boss mode', h('form', { onsubmit: function(e){
@@ -920,7 +922,7 @@ function viewBoss(){
           try { await api('admin_overview', { key: inp.value.trim() }); store('ff_boss', inp.value.trim()); viewBoss(); }
           catch (ex) { if (ex.code === 'no_db' || ex.code === 'db_down') return viewBossNoDb(ex.code); err.textContent = ex.message; }
         });
-      } }, h('h2', null, 'Boss mode'), h('p', { class: 'sub' }, 'Enter your FrickFake admin key (the same one you use for your waitlist list). It stays on this phone only.'), field('Admin key', inp), err, btn)),
+      } }, h('h2', null, 'Boss mode'), h('p', { class: 'sub' }, 'Enter your FrickFake admin key (the same one you use for your waitlist list). It stays on this phone only.'), field('Admin key', inp), show, err, btn)),
       h('a', { class: 'home', href: '/app' }, '← Back to the app')), { notabs: true });
     return;
   }

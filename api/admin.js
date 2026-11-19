@@ -10,10 +10,20 @@ const ADMIN_KEY_SHA256S = [
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const csvCell = s => '"' + String(s ?? '').replace(/"/g, '""') + '"';
 
+// Forgives phone-keyboard slips: extra spaces, quotes or backticks, a trailing period, a capital first letter.
+function keyVariants(key) {
+  const raw = String(key ?? '');
+  const t = raw.trim();
+  const n = t.replace(/[`'"\u201c\u201d\u2018\u2019\s]/g, '').replace(/[.,;:!]+$/, '');
+  return [...new Set([raw, t, n, n.toLowerCase()])].filter(Boolean);
+}
+
 function keyOk(key) {
   if (!key) return false;
-  const A = Buffer.from(createHash('sha256').update(String(key)).digest('hex'));
-  return ADMIN_KEY_SHA256S.some(h => { const B = Buffer.from(h); return A.length === B.length && timingSafeEqual(A, B); });
+  return keyVariants(key).some(k => {
+    const A = Buffer.from(createHash('sha256').update(k).digest('hex'));
+    return ADMIN_KEY_SHA256S.some(h => { const B = Buffer.from(h); return A.length === B.length && timingSafeEqual(A, B); });
+  });
 }
 
 async function readAll() {
