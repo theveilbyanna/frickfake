@@ -76,6 +76,7 @@ select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(
 .err{color:#a5140d;font-weight:700;font-size:14px;margin:0 0 10px}
 .err:empty{display:none}
 .note{font-size:13px;color:var(--text2);margin:10px 0 0}
+.steps{margin:0 0 14px;padding-left:22px;font-size:15px;line-height:1.5;color:#3f3a34}.steps li{margin:4px 0}
 .switch{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:-4px 0 14px;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo)}
 .switch button{min-height:42px;border:0;background:#c3bcaf;font-family:var(--pixel);font-weight:700;font-size:16px;cursor:pointer;color:var(--ink)}
 .switch button[aria-pressed=true]{background:var(--paper);color:var(--red)}
@@ -917,7 +918,7 @@ function viewBoss(){
         e.preventDefault();
         busy(btn, 'Checking…', async function(){
           try { await api('admin_overview', { key: inp.value.trim() }); store('ff_boss', inp.value.trim()); viewBoss(); }
-          catch (ex) { err.textContent = ex.message; }
+          catch (ex) { if (ex.code === 'no_db' || ex.code === 'db_down') return viewBossNoDb(ex.code); err.textContent = ex.message; }
         });
       } }, h('h2', null, 'Boss mode'), h('p', { class: 'sub' }, 'Enter your FrickFake admin key (the same one you use for your waitlist list). It stays on this phone only.'), field('Admin key', inp), err, btn)),
       h('a', { class: 'home', href: '/app' }, '← Back to the app')), { notabs: true });
@@ -931,6 +932,7 @@ async function loadBoss(key){
   try { r = await api('admin_overview', { key: key }); }
   catch (e) {
     if (e.code === 'admin') { store('ff_boss', null); return viewBoss(); }
+    if (e.code === 'no_db' || e.code === 'db_down') return viewBossNoDb(e.code);
     return view(h('div', null, win('Boss mode', [h('p', { class: 'err' }, e.message), h('button', { class: 'btn', type: 'button', onclick: viewBoss }, 'Try again')])), { notabs: true });
   }
   var c = r.counts;
@@ -993,10 +995,25 @@ async function loadBoss(key){
 // ---------- start ----------
 function viewNoDb(){
   view(h('div', null, win('Almost ready', [
-    h('h2', null, 'FrickFake is almost open'),
-    h('p', { class: 'sub' }, 'The app is here, but its database isn’t connected yet. Check back soon!'),
-    h('p', { class: 'note' }, 'Running this site? In Vercel, open the frickfake project → Storage → connect a Neon database, then redeploy.')
+    h('h2', null, 'The doors open soon'),
+    h('p', { class: 'sub' }, 'FrickFake is getting its final checks. If you claimed a number on the waitlist, it’s saved and waiting for you.'),
+    h('a', { class: 'btn', href: '/' }, 'Claim my number')
   ]), h('a', { class: 'home', href: '/' }, '← Back to FrickFake')), { notabs: true });
+}
+function viewBossNoDb(code){
+  var steps = code === 'db_down'
+    ? [h('p', { class: 'sub' }, 'The database is connected but didn’t answer. Wait a minute and try again. If it keeps happening, open Vercel → this project → Storage and check that the Neon database is still there.')]
+    : [h('p', { class: 'sub' }, 'The app is live, but the database isn’t connected yet, so members see “The doors open soon.” Do this once:'),
+       h('ol', { class: 'steps' },
+         h('li', null, 'Open vercel.com and tap this project (the one whose link you share).'),
+         h('li', null, 'Tap Storage → Create Database → Neon → Free plan → Create.'),
+         h('li', null, 'Connect it to this project with all environments ticked.'),
+         h('li', null, 'Go to Deployments → ⋯ on the newest one → Redeploy.'),
+         h('li', null, 'Come back here and tap Try again.')
+       )];
+  view(h('div', null, win('Boss mode', [h('h2', null, code === 'db_down' ? 'Database not answering' : 'One step left')].concat(steps, [
+    h('button', { class: 'btn', type: 'button', onclick: viewBoss }, 'Try again')
+  ])), h('a', { class: 'home', href: '/app' }, '← Back to the app')), { notabs: true });
 }
 function start(){
   if (location.hash === '#boss') return viewBoss();
