@@ -13,7 +13,10 @@ const RESERVED = new Set(['admin', 'frickfake', 'support', 'moderator', 'mod', '
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/;
 const SN_RE = /^[A-Za-z0-9_.-]{3,20}$/;
 // Same admin key as api/admin.js (only its SHA-256 is stored). FF_ADMIN_KEY in Vercel also works.
-const ADMIN_KEY_SHA256 = '049e2ae46c9c007df49a21f695ba0289026e3c76d4840cfbe2dbb6ba8d7b2880';
+const ADMIN_KEY_SHA256S = [
+  '049e2ae46c9c007df49a21f695ba0289026e3c76d4840cfbe2dbb6ba8d7b2880', // original key
+  'fa5b3c954316ef19124652c04b63470ce8ea6cbebfadfcd7ba0e0a163ee05fe0'  // second key (Nov 18, 2026)
+];
 
 class Oops extends Error {
   constructor(message, status = 400, code = 'bad') { super(message); this.status = status; this.code = code; }
@@ -42,7 +45,7 @@ async function checkPw(pw, stored) {
 function adminOk(key) {
   if (!key) return false;
   const a = Buffer.from(sha(key));
-  const ok = [ADMIN_KEY_SHA256, process.env.FF_ADMIN_KEY ? sha(process.env.FF_ADMIN_KEY) : null].filter(Boolean);
+  const ok = [...ADMIN_KEY_SHA256S, process.env.FF_ADMIN_KEY ? sha(process.env.FF_ADMIN_KEY) : null].filter(Boolean);
   return ok.some(h => { const b = Buffer.from(h); return a.length === b.length && timingSafeEqual(a, b); });
 }
 

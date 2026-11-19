@@ -2,7 +2,10 @@ import { list, get } from '@vercel/blob';
 import { timingSafeEqual, createHash } from 'node:crypto';
 
 // Only the SHA-256 of the admin key is stored here; the key itself stays private.
-const ADMIN_KEY_SHA256 = '049e2ae46c9c007df49a21f695ba0289026e3c76d4840cfbe2dbb6ba8d7b2880';
+const ADMIN_KEY_SHA256S = [
+  '049e2ae46c9c007df49a21f695ba0289026e3c76d4840cfbe2dbb6ba8d7b2880', // original key
+  'fa5b3c954316ef19124652c04b63470ce8ea6cbebfadfcd7ba0e0a163ee05fe0'  // second key (Nov 18, 2026)
+];
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const csvCell = s => '"' + String(s ?? '').replace(/"/g, '""') + '"';
@@ -10,8 +13,7 @@ const csvCell = s => '"' + String(s ?? '').replace(/"/g, '""') + '"';
 function keyOk(key) {
   if (!key) return false;
   const A = Buffer.from(createHash('sha256').update(String(key)).digest('hex'));
-  const B = Buffer.from(ADMIN_KEY_SHA256);
-  return A.length === B.length && timingSafeEqual(A, B);
+  return ADMIN_KEY_SHA256S.some(h => { const B = Buffer.from(h); return A.length === B.length && timingSafeEqual(A, B); });
 }
 
 async function readAll() {
