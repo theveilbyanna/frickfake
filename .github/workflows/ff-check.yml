@@ -6,16 +6,12 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name: Check live FrickFake sites
+      - name: Check frickfake.online
         run: |
-          for host in frickfake-qizi.vercel.app; do
-            home=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "https://$host/")
-            app=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "https://$host/app")
-            count=$(curl -s --max-time 20 "https://$host/api/count" | head -c 200)
-            me=$(curl -s --max-time 30 -X POST -H 'content-type: application/json' -d '{"action":"me"}' "https://$host/api/app" | head -c 300)
-            title=$(curl -s --max-time 20 "https://$host/" | grep -o '<title>[^<]*' | head -1)
-            photo=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "https://$host/api/app?photo=1&v=1")
-            looks=$(curl -s --max-time 20 "https://$host/app" | grep -c "Make it yours")
-            me="$me photo_signed_out=$photo app_has_looks=$looks"
-            echo "::notice title=$host::home=$home app=$app title=${title#<title>} count=$count me=$me"
-          done
+          ns=$(dig +short NS frickfake.online @1.1.1.1 | tr '\n' ' ')
+          tld=$(dig +short NS online. | head -1)
+          reg=$(dig +norec +short NS frickfake.online @$tld 2>/dev/null | tr '\n' ' ')
+          a=$(dig +short A frickfake.online @1.1.1.1 | tr '\n' ' ')
+          www=$(dig +short www.frickfake.online @1.1.1.1 | tr '\n' ' ')
+          home=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 https://frickfake.online/ || true)
+          echo "::notice title=frickfake.online::registry_ns=[$reg] public_ns=[$ns] A=[$a] www=[$www] https=$home"
