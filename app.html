@@ -124,6 +124,17 @@ select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(
 .linkbtn{background:none;border:0;color:#5e574e;font-size:14px;cursor:pointer;text-decoration:underline;padding:6px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .chip{font-family:var(--type);font-size:13px;padding:3px 8px;border:1px solid #c9c1b4;background:#f6f1e8;color:var(--ink)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 0 10px}
+.seg button{min-height:40px;background:var(--putty);border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);font-family:var(--pixel);font-weight:700;font-size:15px;color:var(--ink);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bone);border-color:var(--shadow) var(--hi) var(--hi) var(--shadow)}
+.idea{display:flex;gap:10px;align-items:flex-start}
+.idea .vote{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:56px;min-height:60px;padding:4px 6px;background:var(--putty);border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);font-family:var(--pixel);font-weight:700;font-size:15px;color:var(--ink);cursor:pointer}
+.idea .vote b{font-size:20px;line-height:1}
+.idea .vote[aria-pressed=true]{background:var(--red);color:var(--red-ink);border-color:var(--red-hi) var(--red-dark) var(--red-dark) var(--red-hi)}
+.idea .vote:disabled{opacity:.6;cursor:default}
+.idea .txt{flex:1;min-width:0}
+.idea .body{margin-top:4px}
+.tag.plan{color:#1d4fa3}.tag.done{color:#1f7a29}.tag.hid{color:#777}
 .section-title{font-family:var(--display);text-transform:uppercase;font-size:26px;margin:4px 2px 10px;letter-spacing:.01em}
 .counter{font-size:13px;color:var(--text2);text-align:right;margin:-6px 0 8px}
 details.more{background:var(--putty);color:var(--ink);border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);margin:0 0 12px}
@@ -131,7 +142,7 @@ details.more summary{cursor:pointer;padding:12px;font-family:var(--pixel);font-w
 details.more > div{padding:0 12px 12px}
 
 /* tabs */
-.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:560px;z-index:30;display:grid;grid-template-columns:repeat(4,1fr);background:var(--putty);border-top:2px solid var(--hi);box-shadow:0 -2px 0 var(--shadow);padding-bottom:env(safe-area-inset-bottom)}
+.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:560px;z-index:30;display:grid;grid-template-columns:repeat(5,1fr);background:var(--putty);border-top:2px solid var(--hi);box-shadow:0 -2px 0 var(--shadow);padding-bottom:env(safe-area-inset-bottom)}
 .tabs button{position:relative;min-height:60px;border:0;background:none;color:var(--ink);font-family:var(--pixel);font-weight:700;font-size:15px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 .tabs button svg{width:24px;height:24px}
 .tabs button[aria-current=page]{color:var(--red);background:var(--paper);box-shadow:inset 2px 2px 0 var(--lo)}
@@ -219,6 +230,7 @@ input[type=color]{width:64px;flex:none;padding:3px;cursor:pointer}
   <button type="button" data-tab="buddies"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16 14.6c2.8-.3 4.9 1.4 5.5 4.4"/></svg><span>Buddies</span><span class="badge" id="badge-buddies" hidden></span></button>
   <button type="button" data-tab="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17"/><path d="M7.5 9h9M7.5 13h9M7.5 17h5"/></svg><span>Feed</span></button>
   <button type="button" data-tab="find"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></svg><span>Find</span></button>
+  <button type="button" data-tab="ideas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.4 1.1 2.2h5c0-.8.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></svg><span>Ideas</span></button>
   <button type="button" data-tab="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg><span>Me</span></button>
 </nav>
 <div class="overlay" id="chat" hidden></div>
@@ -565,6 +577,7 @@ function viewAuth(mode, msg){
 function viewPending(){
   closeAll(); setTabs(false); updateMeChip();
   var me = S.me;
+  var ib = ideasBox();
   view(h('div', null,
     win('Waiting room', [
       h('h2', null, 'You’re in line, ' + me.screen_name + '.'),
@@ -573,8 +586,10 @@ function viewPending(){
       h('div', { class: 'grid2' }, h('button', { class: 'btn', type: 'button', onclick: share }, 'Invite friends'), h('button', { class: 'btn grey', type: 'button', onclick: logout }, 'Log out'))
     ]),
     profileForm('While you wait, fill in your profile'),
-    lookForm()
+    lookForm(),
+    ib
   ), { notabs: true });
+  if (location.hash === '#ideas') setTimeout(function(){ ib.scrollIntoView({ behavior: 'smooth' }); }, 120);
   S.unreadTotal = -1;
   schedule();
 }
@@ -582,13 +597,18 @@ function viewPending(){
 // ---------- main app ----------
 function setTabs(on){ $('tabs').hidden = !on; }
 document.querySelectorAll('#tabs button').forEach(function(b){ b.addEventListener('click', function(){ showTab(b.dataset.tab); }); });
-function viewMain(){ setTabs(true); updateMeChip(); showTab(S.tab || 'buddies'); }
+function viewMain(){
+  setTabs(true); updateMeChip();
+  if (location.hash === '#ideas') { S.tab = 'ideas'; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+  showTab(S.tab || 'buddies');
+}
 function showTab(t){
   S.tab = t;
   document.querySelectorAll('#tabs button').forEach(function(b){ if (b.dataset.tab === t) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   if (t === 'buddies') tabBuddies();
   else if (t === 'feed') tabFeed();
   else if (t === 'find') tabFind();
+  else if (t === 'ideas') tabIdeas();
   else tabMe();
   window.scrollTo(0, 0);
 }
@@ -889,6 +909,72 @@ function postEl(p){
   return card;
 }
 
+// ---------- suggestion box ----------
+function tabIdeas(){ view(ideasBox()); }
+function ideasBox(){
+  var ta = h('textarea', { maxlength: '500', placeholder: 'What should FrickFake add, fix or never do?', 'aria-label': 'Your idea' });
+  var cnt = h('div', { class: 'counter' }, '0/500');
+  var btn = h('button', { class: 'btn', type: 'submit' }, 'Drop it in the box');
+  ta.addEventListener('input', function(){ cnt.textContent = ta.value.length + '/500'; });
+  var list = h('div', { class: 'ideas' }, h('p', { class: 'spin' }, 'Opening the suggestion box…'));
+  var sort = 'top';
+  var segTop = h('button', { type: 'button', 'aria-pressed': 'true', onclick: function(){ setSort('top'); } }, 'Top voted');
+  var segNew = h('button', { type: 'button', 'aria-pressed': 'false', onclick: function(){ setSort('new'); } }, 'Newest');
+  function setSort(v){ sort = v; segTop.setAttribute('aria-pressed', String(v === 'top')); segNew.setAttribute('aria-pressed', String(v === 'new')); load(); }
+  async function load(){
+    try {
+      var r = await api('ideas', { sort: sort });
+      list.replaceChildren();
+      if (!r.ideas.length) list.append(h('div', { class: 'card' }, h('p', { style: 'margin:0' }, 'The box is empty. Be the first real idea in it.')));
+      r.ideas.forEach(function(i){ list.append(ideaEl(i)); });
+    } catch (e) { list.replaceChildren(h('p', { class: 'err' }, e.message)); }
+  }
+  var form = h('form', { onsubmit: function(e){
+      e.preventDefault();
+      if (ta.value.trim().length < 4) { ta.focus(); return; }
+      busy(btn, 'Dropping…', async function(){
+        try {
+          var r = await api('idea_add', { body: ta.value });
+          ta.value = ''; cnt.textContent = '0/500';
+          var empty = list.querySelector('.card:not(.idea)'); if (empty) empty.remove();
+          list.prepend(ideaEl(r.idea));
+          toast('In the box. Thanks for keeping it real!');
+        } catch (ex) { toast(ex.message); }
+      });
+    } },
+    h('p', { class: 'sub', style: 'margin-top:0' }, 'This place gets built by its members. Drop an idea, vote up the ones you want, and watch them go from Planned to Done.'),
+    ta, cnt, btn);
+  var box = h('div', null,
+    win('Suggestion box', form),
+    h('h2', { class: 'section-title' }, 'What members want'),
+    h('div', { class: 'seg' }, segTop, segNew),
+    list);
+  load();
+  return box;
+}
+function ideaEl(i){
+  var stateTag = i.state === 'planned' ? h('span', { class: 'tag plan' }, 'planned') : i.state === 'done' ? h('span', { class: 'tag done' }, 'done ✓') : null;
+  var vote = h('button', { class: 'vote', type: 'button', 'aria-pressed': String(!!i.mine_vote), disabled: i.mine || null,
+      'aria-label': (i.mine ? 'Votes on your idea: ' : 'Vote for this idea. Votes: ') + i.votes,
+      title: i.mine ? 'Members vote on your idea' : null }, h('b', null, '▲'), h('span', null, String(i.votes)));
+  vote.addEventListener('click', async function(){
+    var on = vote.getAttribute('aria-pressed') !== 'true';
+    try { var r = await api('idea_vote', { idea: i.id, on: on }); vote.setAttribute('aria-pressed', String(r.mine_vote)); vote.lastChild.textContent = String(r.votes); }
+    catch (e) { toast(e.message); }
+  });
+  var card = h('article', { class: 'card idea' }, vote,
+    h('div', { class: 'txt' },
+      h('div', { class: 'hd' },
+        i.user_id ? h('button', { class: 'nm', type: 'button', onclick: function(){ if (S.me && S.me.verified) openProfile(i.user_id); } }, i.screen_name) : h('b', null, 'A former member'),
+        i.number ? h('span', { class: 'num' }, num(i.number)) : null, stateTag, h('span', { class: 'when' }, ago(i.created_at))),
+      h('p', { class: 'body' }, i.body),
+      i.mine ? h('div', { class: 'ft' }, h('button', { class: 'linkbtn', type: 'button', style: 'margin-left:auto', onclick: async function(){
+        if (!(await confirmSheet('Take this idea out of the box?', 'Its votes go with it.', 'Delete', true))) return;
+        try { await api('idea_delete', { idea: i.id }); card.remove(); toast('Idea deleted.'); } catch (e) { toast(e.message); }
+      } }, 'Delete')) : null));
+  return card;
+}
+
 // ---------- find ----------
 function tabFind(){
   var q = h('input', { placeholder: 'Interest, screen name or #number', autocapitalize: 'off', maxlength: '60', 'aria-label': 'Search' });
@@ -1154,6 +1240,14 @@ async function loadBoss(key){
         x.target_banned ? h('span') : h('button', { class: 'btn', type: 'button', onclick: async function(){ if (await confirmSheet('Ban ' + x.target_name + '?', 'They’ll be kicked out and can’t log in.', 'Ban', true)) { await act({ action: 'admin_set', id: x.target_id, banned: true }, 'Banned.'); act({ action: 'admin_resolve', id: x.id }, 'Report closed.'); } } }, 'Ban them'),
         h('button', { class: 'btn grey', type: 'button', onclick: function(){ act({ action: 'admin_resolve', id: x.id }, 'Report closed.'); } }, 'Dismiss')));
   });
+  var ideas = (r.ideas || []).map(function(x){
+    var tag = { planned: h('span', { class: 'tag plan' }, 'planned'), done: h('span', { class: 'tag done' }, 'done'), hidden: h('span', { class: 'tag hid' }, 'hidden') }[x.state] || null;
+    function stBtn(st, label){ return x.state === st ? null : h('button', { class: 'btn small grey', type: 'button', onclick: function(){ act({ action: 'admin_idea', id: x.id, state: st }, label + '.'); } }, label); }
+    return h('div', { class: 'card' },
+      h('div', { class: 'hd' }, h('b', null, '▲ ' + x.votes), h('span', null, x.screen_name || 'former member'), x.number ? h('span', { class: 'num' }, num(x.number)) : null, tag, h('span', { class: 'when' }, ago(x.created_at))),
+      h('p', { class: 'body' }, x.body),
+      h('div', { class: 'row', style: 'flex-wrap:wrap;margin-top:8px' }, stBtn('planned', 'Planned'), stBtn('done', 'Done'), stBtn('open', 'Reopen'), stBtn('hidden', 'Hide')));
+  });
   var members = r.members.map(function(u){
     var tag = u.banned ? h('span', { class: 'tag bad' }, 'banned') : u.verified ? h('span', { class: 'tag ok' }, 'verified') : h('span', { class: 'tag wait' }, 'waiting');
     return h('div', { class: 'card' },
@@ -1174,9 +1268,10 @@ async function loadBoss(key){
   });
   view(h('div', null,
     h('h2', { class: 'section-title' }, 'Boss mode'),
-    h('div', { class: 'stats' }, stat(c.total, 'members'), stat(c.verified, 'verified'), stat(c.pending, 'waiting'), stat(c.online, 'online now'), stat(c.messages, 'messages'), stat(c.posts, 'posts'), stat(c.banned, 'banned')),
+    h('div', { class: 'stats' }, stat(c.total, 'members'), stat(c.verified, 'verified'), stat(c.pending, 'waiting'), stat(c.online, 'online now'), stat(c.messages, 'messages'), stat(c.posts, 'posts'), stat(c.ideas || 0, 'ideas'), stat(c.banned, 'banned')),
     h('h2', { class: 'section-title' }, 'Waiting room (' + r.pending.length + ')'), pending,
     reports.length ? [h('h2', { class: 'section-title' }, 'Reports (' + reports.length + ')'), reports] : null,
+    h('details', { class: 'more' }, h('summary', null, 'Suggestion box (' + ideas.length + ')'), h('div', null, ideas.length ? ideas : h('div', { class: 'card' }, 'No ideas yet.'))),
     h('details', { class: 'more' }, h('summary', null, 'All members (' + r.members.length + ')'), h('div', null, members)),
     h('div', { class: 'grid2' },
       h('a', { class: 'btn grey', href: '/api/admin?key=' + encodeURIComponent(key), target: '_blank', rel: 'noopener' }, 'Waitlist list'),

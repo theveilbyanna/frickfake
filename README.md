@@ -6,6 +6,7 @@ A social network for real people only: the old-school messenger, rebuilt.
 
 - `index.html` – the waitlist page (retro messenger style, every sign-up gets a FrickFake number)
 - `app.html` – the app at **/app**: accounts, buddy list with Allow / Nope requests, statuses and away messages, one-on-one chat, a buddies-only feed, Find people, profiles, block and report
+- `app.html#ideas` – the **suggestion box** (/app#ideas): every signed-in member, even in the waiting room, can drop up to 5 ideas a day and vote on others. Boss mode marks ideas Planned, Done or Hidden.
 - `app.html#boss` – **boss mode** (/app#boss): verify new members, handle reports, ban, reset passwords. Uses the same admin key as the waitlist list.
 - `api/app.js` – the app's API (one function, `POST /api/app` with `{ action }`)
 - `api/join.js`, `api/count.js`, `api/admin.js` – the waitlist (unchanged)
