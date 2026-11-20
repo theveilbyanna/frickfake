@@ -10,7 +10,7 @@ jobs:
         run: |
           ns=$(dig +short NS frickfake.online @1.1.1.1 | tr '\n' ' ')
           tld=$(dig +short NS online. | head -1)
-          reg=$(dig +norec +short NS frickfake.online @$tld 2>/dev/null | tr '\n' ' ')
+          reg=$(dig +norec +noall +authority NS frickfake.online @$tld 2>/dev/null | awk "{print \$5}" | tr "\n" " ")
           a=$(dig +short A frickfake.online @1.1.1.1 | tr '\n' ' ')
           www=$(dig +short www.frickfake.online @1.1.1.1 | tr '\n' ' ')
           home=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 https://frickfake.online/ || true)
