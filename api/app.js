@@ -9,6 +9,7 @@ const scrypt = promisify(scryptCb);
 const COOKIE = 'ff_session';
 const SESSION_DAYS = 90;
 const STATUSES = ['free', 'away', 'dnd', 'invisible'];
+const IDEA_STATES = ['open', 'planned', 'done', 'hidden'];
 const RESERVED = new Set(['admin', 'frickfake', 'support', 'moderator', 'mod', 'official', 'staff', 'root', 'system', 'help']);
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/;
 const SN_RE = /^[A-Za-z0-9_.-]{3,20}$/;
@@ -458,6 +459,56 @@ const USER = {
     if (!other) throw oops('Who should be unblocked?');
     await ctx.sql`DELETE FROM ff_blocks WHERE blocker_id = ${ctx.me.id} AND blocked_id = ${other}`;
     return {};
+  },
+
+  // ----- suggestion box: every signed-in member (waiting room too) can drop ideas and vote -----
+  async ideas(ctx) {
+    const { sql, me, body: b } = ctx;
+    const sort = b.sort === 'new' ? 'new' : 'top';
+    const rows = await sql`
+      SELECT i.id, i.body, i.state, i.created_at, u.id AS user_id, u.number, u.screen_name,
+        (SELECT COUNT(*)::int FROM ff_idea_votes v WHERE v.idea_id = i.id) AS votes,
+        EXISTS (SELECT 1 FROM ff_idea_votes v WHERE v.idea_id = i.id AND v.user_id = ${me.id}) AS mine_vote
+      FROM ff_ideas i LEFT JOIN ff_users u ON u.id = i.user_id
+      WHERE i.state <> 'hidden' AND (u.id IS NULL OR NOT u.banned)
+      ORDER BY CASE WHEN ${sort}::text = 'top' THEN (SELECT COUNT(*) FROM ff_idea_votes v WHERE v.idea_id = i.id) ELSE 0 END DESC, i.id DESC
+      LIMIT 100`;
+    return { ideas: rows.map(r => ({ ...r, mine: r.user_id === me.id })) };
+  },
+
+  async idea_add(ctx) {
+    const { sql, me, body: b } = ctx;
+    const text = cleanText(b.body, 500);
+    if (text.length < 4) throw oops('Tell us a little more about your idea.');
+    const [{ c }] = await sql`SELECT COUNT(*)::int AS c FROM ff_ideas WHERE user_id = ${me.id} AND created_at > now() - interval '1 day'`;
+    if (c >= 5) throw oops('That’s 5 ideas today. Save the next one for tomorrow!', 429, 'slow');
+    const dup = await sql`SELECT 1 FROM ff_ideas WHERE user_id = ${me.id} AND lower(body) = ${text.toLowerCase()}`;
+    if (dup.length) throw oops('You already dropped that one in the box.');
+    const rows = await sql`INSERT INTO ff_ideas (user_id, body) VALUES (${me.id}, ${text}) RETURNING id, body, state, created_at`;
+    return { idea: { ...rows[0], user_id: me.id, number: me.number, screen_name: me.screen_name, votes: 0, mine_vote: false, mine: true } };
+  },
+
+  async idea_vote(ctx) {
+    const { sql, me, body: b } = ctx;
+    const id = int(b.idea);
+    if (!id) throw oops('Which idea?');
+    const rows = await sql`SELECT user_id, state FROM ff_ideas WHERE id = ${id}`;
+    if (!rows.length || rows[0].state === 'hidden') throw oops('That idea is gone.', 404, 'gone');
+    if (rows[0].user_id === me.id) throw oops('It’s your idea. Let everyone else vote on it!');
+    if (b.on === false) await sql`DELETE FROM ff_idea_votes WHERE idea_id = ${id} AND user_id = ${me.id}`;
+    else await sql`INSERT INTO ff_idea_votes (idea_id, user_id) VALUES (${id}, ${me.id}) ON CONFLICT DO NOTHING`;
+    const [{ votes }] = await sql`SELECT COUNT(*)::int AS votes FROM ff_idea_votes WHERE idea_id = ${id}`;
+    const mine = await sql`SELECT 1 FROM ff_idea_votes WHERE idea_id = ${id} AND user_id = ${me.id}`;
+    return { votes, mine_vote: mine.length > 0 };
+  },
+
+  async idea_delete(ctx) {
+    const { sql, me, body: b } = ctx;
+    const id = int(b.idea);
+    if (!id) throw oops('Which idea?');
+    const gone = await sql`DELETE FROM ff_ideas WHERE id = ${id} AND user_id = ${me.id} RETURNING id`;
+    if (!gone.length) throw oops('You can only delete your own ideas.', 403, 'not_yours');
+    return {};
   }
 };
 
@@ -693,7 +744,20 @@ const ADMIN = {
         t.number AS target_number, t.banned AS target_banned, rp.screen_name AS reporter_name, rp.number AS reporter_number
       FROM ff_reports r JOIN ff_users t ON t.id = r.target_id LEFT JOIN ff_users rp ON rp.id = r.reporter_id
       WHERE NOT r.resolved ORDER BY r.id DESC`;
-    return { counts: { ...counts, messages, posts }, pending, members, reports };
+    const ideas = await sql`SELECT i.id, i.body, i.state, i.created_at, u.screen_name, u.number,
+        (SELECT COUNT(*)::int FROM ff_idea_votes v WHERE v.idea_id = i.id) AS votes
+      FROM ff_ideas i LEFT JOIN ff_users u ON u.id = i.user_id
+      ORDER BY (i.state = 'hidden'), votes DESC, i.id DESC LIMIT 300`;
+    return { counts: { ...counts, messages, posts, ideas: ideas.filter(i => i.state !== 'hidden').length }, pending, members, reports, ideas };
+  },
+
+  async admin_idea(ctx) {
+    const { sql, body: b } = ctx;
+    const id = int(b.id);
+    if (!id) throw oops('Which idea?');
+    if (!IDEA_STATES.includes(b.state)) throw oops('Pick open, planned, done or hidden.');
+    await sql`UPDATE ff_ideas SET state = ${b.state} WHERE id = ${id}`;
+    return {};
   },
 
   async admin_set(ctx) {
