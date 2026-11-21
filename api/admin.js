@@ -18,11 +18,14 @@ function keyVariants(key) {
   return [...new Set([raw, t, n, n.toLowerCase()])].filter(Boolean);
 }
 
+// FF_ADMIN_KEY in Vercel also works here, same as boss mode (api/app.js).
 function keyOk(key) {
   if (!key) return false;
+  const sha = s => createHash('sha256').update(String(s)).digest('hex');
+  const ok = [...ADMIN_KEY_SHA256S, process.env.FF_ADMIN_KEY ? sha(process.env.FF_ADMIN_KEY.trim()) : null].filter(Boolean);
   return keyVariants(key).some(k => {
-    const A = Buffer.from(createHash('sha256').update(k).digest('hex'));
-    return ADMIN_KEY_SHA256S.some(h => { const B = Buffer.from(h); return A.length === B.length && timingSafeEqual(A, B); });
+    const A = Buffer.from(sha(k));
+    return ok.some(h => { const B = Buffer.from(h); return A.length === B.length && timingSafeEqual(A, B); });
   });
 }
 

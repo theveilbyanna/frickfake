@@ -1318,7 +1318,14 @@ async function boot(){
   catch (e) { if (e.code === 'no_db' || e.code === 'db_down') return viewNoDb(); S.me = null; }
   start();
 }
-window.addEventListener('hashchange', function(){ if (location.hash === '#boss') viewBoss(); else boot(); });
+// A pasted link can pick up a stray period or space ("#boss."), so tidy it back to #boss.
+function fixBossHash(){
+  if (location.hash !== '#boss' && /^#boss[\W_]*$/i.test(decodeURIComponent(location.hash))) {
+    try { history.replaceState(null, '', location.pathname + location.search + '#boss'); } catch (e) {}
+  }
+}
+fixBossHash();
+window.addEventListener('hashchange', function(){ fixBossHash(); if (location.hash === '#boss') viewBoss(); else boot(); });
 boot();
 })();
 </script>
