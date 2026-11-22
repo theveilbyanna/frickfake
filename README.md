@@ -29,6 +29,13 @@ A social network for real people only: the old-school messenger, rebuilt.
 2. **Blob store** (already used by the waitlist): keeps waitlist sign-ups. Optional for the app, but needed for members to keep their waitlist numbers.
 3. Optional: set `FF_ADMIN_KEY` to a new secret if you ever need a different admin key. The original key keeps working too.
 
+## Founder Pack ($10, one time)
+
+- Verified members see a **Founder Pack** box in the Me tab. Buying it gives a ★ Founder badge, three founder-only looks (Holo, Neon, Outlaw) and early access.
+- `lib/founder.js` holds the price and the Stripe Payment Link. The box only shows once `link` is filled in.
+- `api/stripe.js` is the Stripe webhook (`https://www.frickfake.online/api/stripe`, events `checkout.session.completed` and `checkout.session.async_payment_succeeded`). It needs `STRIPE_WEBHOOK_SECRET` in Vercel's environment variables. Only Founder Pack purchases count; your other Stripe sales are ignored.
+- Boss mode shows founders, founder sales, and any payment that didn't match an account. Use **Make Founder / Remove Founder** on a member for gifts or refunds.
+
 ## Legal contact
 
 The legal pages list **hello@frickfake.online** for privacy requests, takedown notices and appeals. It's an email forward set up in Namecheap (Domain → Redirect Email).

@@ -182,6 +182,12 @@ details.more > div{padding:0 12px 12px}
 .stat span{font-size:13px;color:var(--muted)}
 .tag{display:inline-block;font-family:var(--pixel);font-size:12px;padding:1px 6px;border:1px solid currentColor;margin-left:6px}
 .tag.ok{color:#1f7a29}.tag.wait{color:#9a6a00}.tag.bad{color:#a5140d}
+.fstar{color:#d4a017;margin-left:5px;font-size:.95em;text-shadow:0 0 1px #6b4e00}
+.fbadge{display:inline-block;margin-left:8px;padding:1px 7px;background:linear-gradient(90deg,#8a6a00,#f1c232,#8a6a00);color:#0d0c0b;font:700 12px/1.6 var(--pixel);letter-spacing:.04em;vertical-align:middle;border:1px solid #6b4e00;white-space:nowrap}
+.phead .who .fbadge{font:700 12px/1.6 var(--pixel);color:#0d0c0b}
+.perks{margin:0 0 14px;padding-left:20px;font-size:15px}
+.perks li{margin:3px 0}
+.sw[aria-disabled=true]{opacity:.62}
 .legalnav{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;font-family:var(--type);font-size:13px;color:var(--muted);margin:0 0 24px}
 .legalnav a{color:var(--muted)}
 .home{display:block;text-align:center;font-family:var(--type);color:var(--muted);font-size:14px;margin:6px 0 20px}
@@ -283,7 +289,11 @@ var THEMES = {
   sunset:   { n: 'Sunset',    a: '#f0682a', d: '#8a2a0c', p: '#efd5c3', w: '#fffaf6', b: 'linear-gradient(180deg,#2b1055 0%,#d53369 55%,#f9a826 100%)' },
   lavender: { n: 'Lavender',  a: '#8e63ce', d: '#4a2a7e', p: '#dcd1ee', w: '#fcfaff', b: 'repeating-radial-gradient(circle at 0 0,#b79be6 0 10px,#9a75d6 10px 20px)' },
   gold:     { n: 'Gold',      a: '#d4a017', d: '#6b4e00', p: '#e6dbb9', w: '#fffdf5', b: 'repeating-linear-gradient(-45deg,#0d0c0b 0 12px,#d4a017 12px 14px,#0d0c0b 14px 26px)' },
-  denim:    { n: 'Denim',     a: '#4a6fa5', d: '#1e3354', p: '#c8d0dc', w: '#f8fafd', b: 'repeating-linear-gradient(45deg,rgba(255,255,255,.08) 0 2px,transparent 2px 6px),repeating-linear-gradient(-45deg,rgba(0,0,0,.18) 0 2px,transparent 2px 7px),#3b5b88' }
+  denim:    { n: 'Denim',     a: '#4a6fa5', d: '#1e3354', p: '#c8d0dc', w: '#f8fafd', b: 'repeating-linear-gradient(45deg,rgba(255,255,255,.08) 0 2px,transparent 2px 6px),repeating-linear-gradient(-45deg,rgba(0,0,0,.18) 0 2px,transparent 2px 7px),#3b5b88' },
+  // Founder Pack looks (f: true). The server only lets Founders pick these.
+  holo:     { n: 'Holo ★',    f: true, a: '#a24bf0', d: '#3d1a6e', p: '#dcd6ec', w: '#fdfbff', b: 'linear-gradient(120deg,#ff9ad5,#9ad0ff 25%,#b8ffd9 50%,#fff3a8 75%,#ff9ad5)' },
+  neon:     { n: 'Neon ★',    f: true, a: '#ff2ea6', d: '#5a0a7a', p: '#d3cbe0', w: '#fbf9ff', b: 'linear-gradient(transparent calc(100% - 1px),#ff2ea6 0) 0 0/100% 18px,linear-gradient(90deg,transparent calc(100% - 1px),#21e6ff 0) 0 0/18px 100%,linear-gradient(180deg,#120024,#3a0057)' },
+  outlaw:   { n: 'Outlaw ★',  f: true, a: '#c8102e', d: '#3a0610', p: '#cbc5bf', w: '#fbf8f6', b: 'radial-gradient(circle,#e6e6e6 0 2px,#7a7a7a 2.5px,transparent 3px) 0 0/22px 22px,linear-gradient(180deg,#141414,#2b2b2b)' }
 };
 var LOOK_VARS = ['--red', '--red-dark', '--red-hi', '--red-ink', '--bar-ink', '--putty', '--paper'];
 function hx(c){ c = String(c).replace('#', ''); return [0, 2, 4].map(function(i){ return parseInt(c.slice(i, i + 2), 16) || 0; }); }
@@ -350,6 +360,40 @@ function win(title, body, o){
 function field(label, input, optional, hint){
   var id = 'f' + (++fid); input.id = id;
   return h('div', { class: 'field' }, h('label', { for: id }, label, optional ? h('span', { class: 'opt' }, ' (optional)') : null), input, hint ? h('span', { class: 'opt', style: 'font-size:13px' }, hint) : null);
+}
+// ★ next to a Founder's name in lists; the full badge on profiles.
+function fstar(u){ return u && u.founder ? h('span', { class: 'fstar', title: 'Founder', 'aria-label': 'Founder' }, '★') : null; }
+function fbadge(u){ return u && u.founder ? h('span', { class: 'fbadge' }, '★ FOUNDER') : null; }
+function founderUrl(me, o){
+  return o.link + (o.link.indexOf('?') < 0 ? '?' : '&') + 'client_reference_id=ff_founder_' + me.id + '&prefilled_email=' + encodeURIComponent(me.email || '');
+}
+function founderBox(me){
+  if (me.founder) return win('★ Founder', [h('p', { class: 'sub', style: 'margin:0' }, 'You’re a FrickFake Founder. Thank you for backing a place for real people. Your badge shows next to your name, and the Holo, Neon and Outlaw looks are unlocked under Make it yours.')]);
+  var o = me.founder_offer;
+  if (!o) return null;
+  return win('Founder Pack · ' + o.price, [
+    h('p', { class: 'sub', style: 'margin-top:0' }, 'Back FrickFake and wear it proud. One payment, and it’s yours for as long as you’re here.'),
+    h('ul', { class: 'perks' }, h('li', null, '★ Founder badge next to your name everywhere'), h('li', null, '3 founder-only looks: Holo, Neon and Outlaw'), h('li', null, 'Early access to new features')),
+    h('a', { class: 'btn', href: founderUrl(me, o), rel: 'noopener' }, 'Get the Founder Pack · ' + o.price),
+    h('p', { class: 'note' }, 'One-time payment through Stripe. Your perks turn on by themselves within a minute. ', h('a', { href: '/terms#s11', target: '_blank', rel: 'noopener' }, 'Founder Pack terms'), '.')]);
+}
+// Back from Stripe checkout (/app?founder=thanks): say thanks and watch for the perks to switch on.
+function founderReturn(){
+  if (new URLSearchParams(location.search).get('founder') !== 'thanks') return;
+  try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
+  if (!S.me) return;
+  if (S.me.verified) showTab('me');
+  if (S.me.founder) { toast('You’re a Founder! ★'); return; }
+  toast('Thanks! Your Founder perks turn on in a moment.');
+  var tries = 0;
+  var t = setInterval(async function(){
+    tries++;
+    try {
+      var r = await api('me');
+      if (r.me && r.me.founder) { clearInterval(t); S.me = r.me; updateMeChip(); toast('You’re a Founder! ★ Your perks are on.'); if (S.tab === 'me') showTab('me'); }
+    } catch (e) {}
+    if (tries >= 24) clearInterval(t);
+  }, 5000);
 }
 function legalLinks(){
   var a = function(href, t){ return h('a', { href: href, target: '_blank', rel: 'noopener' }, t); };
@@ -696,7 +740,7 @@ function renderBuddyList(){
 function palRow(b){
   var st = b.presence === 'offline' ? (b.last_seen ? 'Last on ' + ago(b.last_seen) : 'Offline') : LABEL[b.presence] + (b.away_msg ? ': ' + b.away_msg : '');
   return h('button', { class: 'pal', type: 'button', 'aria-label': 'Chat with ' + b.screen_name + ', ' + st + (b.unread ? ', ' + b.unread + ' new' : ''), onclick: function(){ openChat(b); } },
-    h('i', { class: 'dot ' + b.presence }), avatar(b), h('span', { class: 'nm' }, b.screen_name), h('span', { class: 'st' }, st),
+    h('i', { class: 'dot ' + b.presence }), avatar(b), h('span', { class: 'nm' }, b.screen_name, fstar(b)), h('span', { class: 'st' }, st),
     b.unread ? h('span', { class: 'badge' }, b.unread) : null);
 }
 async function respond(q, allow, btn){
@@ -857,7 +901,7 @@ async function openProfile(id){
     var top = p.top8 || [];
     sheet(p.screen_name, h('div', null,
       h('div', { class: 'pbanner', style: 'background:' + T.b, 'aria-hidden': 'true' }),
-      h('div', { class: 'phead' }, avatar(p, 'lg'), h('div', { class: 'who' }, h('b', null, p.screen_name), h('span', null, num(p.number)))),
+      h('div', { class: 'phead' }, avatar(p, 'lg'), h('div', { class: 'who' }, h('b', null, p.screen_name), h('span', null, num(p.number)), fbadge(p))),
       p.presence ? h('p', { class: 'kv', style: 'margin-top:12px' }, h('i', { class: 'dot ' + p.presence, style: 'margin-right:6px' }), LABEL[p.presence] + (p.away_msg ? ': ' + p.away_msg : '')) : null,
       h('p', { class: 'kv', style: p.presence ? null : 'margin-top:12px' }, (p.city ? p.city + ' · ' : '') + 'Verified human since ' + new Date(p.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })),
       ints.length ? h('div', { class: 'chips' }, ints.map(function(t){ return h('span', { class: 'chip' }, t); })) : null,
@@ -910,7 +954,7 @@ function postEl(p){
     catch (e) { toast(e.message); }
   });
   var card = h('article', { class: 'card' },
-    h('div', { class: 'hd', style: 'align-items:center' }, avatar({ id: p.user_id, screen_name: p.screen_name, photo_v: p.photo_v }), h('button', { class: 'nm', type: 'button', onclick: function(){ openProfile(p.user_id); } }, p.screen_name), h('span', { class: 'num' }, num(p.number)), h('span', { class: 'when' }, ago(p.created_at))),
+    h('div', { class: 'hd', style: 'align-items:center' }, avatar({ id: p.user_id, screen_name: p.screen_name, photo_v: p.photo_v }), h('button', { class: 'nm', type: 'button', onclick: function(){ openProfile(p.user_id); } }, p.screen_name, fstar(p)), h('span', { class: 'num' }, num(p.number)), h('span', { class: 'when' }, ago(p.created_at))),
     h('p', { class: 'body' }, p.body),
     h('div', { class: 'ft' }, realBtn, mine ? h('button', { class: 'linkbtn', type: 'button', style: 'margin-left:auto', onclick: async function(){
       if (!(await confirmSheet('Delete this post?', 'It’ll be gone for everyone.', 'Delete', true))) return;
@@ -1025,7 +1069,7 @@ function personCard(p){
   setAct(p.rel);
   var ints = (p.interests || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean).slice(0, 6);
   return h('div', { class: 'card' },
-    h('div', { class: 'hd', style: 'align-items:center' }, avatar(p, 'md'), h('button', { class: 'nm', type: 'button', onclick: function(){ openProfile(p.id); } }, p.screen_name), h('span', { class: 'num' }, num(p.number)), actBtn),
+    h('div', { class: 'hd', style: 'align-items:center' }, avatar(p, 'md'), h('button', { class: 'nm', type: 'button', onclick: function(){ openProfile(p.id); } }, p.screen_name, fstar(p)), h('span', { class: 'num' }, num(p.number)), actBtn),
     p.city ? h('div', { class: 'num', style: 'margin-top:2px' }, p.city) : null,
     ints.length ? h('div', { class: 'chips' }, ints.map(function(t){ return h('span', { class: 'chip' }, t); })) : null,
     p.bio ? h('p', { class: 'body', style: 'font-size:15px' }, p.bio.length > 160 ? p.bio.slice(0, 160) + '…' : p.bio) : null);
@@ -1089,7 +1133,10 @@ function lookForm(){
       h('p', { class: 'sub', style: 'margin-top:0' }, 'Pick a look for your profile. It colors your whole app too. Tap one to try it.'),
       h('div', { class: 'swatches', role: 'group', 'aria-label': 'Looks' }, Object.keys(THEMES).map(function(k){
         var T = THEMES[k];
-        return h('button', { class: 'sw', type: 'button', 'aria-pressed': String(me.theme === k), onclick: function(){ save({ theme: k, accent: '' }, T.n + ' look saved.'); } },
+        var locked = T.f && !me.founder;
+        if (locked && !me.founder_offer) return null;
+        return h('button', { class: 'sw', type: 'button', 'aria-pressed': String(me.theme === k), 'aria-disabled': locked ? 'true' : null, title: locked ? 'Comes with the Founder Pack' : null,
+            onclick: function(){ if (locked) { toast(T.n + ' comes with the Founder Pack. Get it in the Founder Pack box above.'); return; } save({ theme: k, accent: '' }, T.n + ' look saved.'); } },
           h('i', { style: 'background:' + T.b }), h('i', { style: 'background:linear-gradient(90deg,' + T.d + ',' + T.a + ')' }), T.n);
       })),
       h('div', { class: 'field' }, h('label', null, 'Your own color ', h('span', { class: 'opt' }, '(optional)')),
@@ -1149,6 +1196,7 @@ function tabMe(){
     }).catch(function(e){ blocked.replaceChildren(h('p', { class: 'err' }, e.message)); });
   });
   view(h('div', null,
+    founderBox(me),
     win('My number', [
       h('div', { class: 'numbox', style: 'margin-top:0' }, h('small', null, me.screen_name), h('b', null, num(me.number))),
       h('p', { class: 'sub' }, 'People can add you by this number or your screen name. Verified human since ' + new Date(me.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) + '.'),
@@ -1259,15 +1307,25 @@ async function loadBoss(key){
       h('p', { class: 'body' }, x.body),
       h('div', { class: 'row', style: 'flex-wrap:wrap;margin-top:8px' }, stBtn('planned', 'Planned'), stBtn('done', 'Done'), stBtn('open', 'Reopen'), stBtn('hidden', 'Hide')));
   });
+  // Paid for the Founder Pack but no account matched (different email, or no account yet). They get it automatically if they sign up with that email.
+  var unmatched = (r.unmatched || []).map(function(x){
+    return h('div', { class: 'card' },
+      h('div', { class: 'hd' }, h('b', null, x.email || 'No email'), h('span', null, '$' + (x.amount / 100).toFixed(2)), h('span', { class: 'when' }, ago(x.created_at))),
+      h('p', { class: 'kv' }, 'No account with this email yet. If they sign up with it, they become a Founder on their own. Otherwise find them under All members and tap Make Founder.'));
+  });
   var members = r.members.map(function(u){
     var tag = u.banned ? h('span', { class: 'tag bad' }, 'banned') : u.verified ? h('span', { class: 'tag ok' }, 'verified') : h('span', { class: 'tag wait' }, 'waiting');
     return h('div', { class: 'card' },
-      h('div', { class: 'hd' }, h('b', null, u.screen_name), h('span', { class: 'num' }, num(u.number)), tag, h('span', { class: 'when' }, u.last_seen ? 'on ' + ago(u.last_seen) : 'never on')),
+      h('div', { class: 'hd' }, h('b', null, u.screen_name, fstar(u)), h('span', { class: 'num' }, num(u.number)), tag, h('span', { class: 'when' }, u.last_seen ? 'on ' + ago(u.last_seen) : 'never on')),
       h('p', { class: 'kv' }, u.email + (u.city ? ' · ' + u.city : '')),
       h('div', { class: 'row', style: 'flex-wrap:wrap;margin-top:8px' },
         u.banned ? h('button', { class: 'btn small grey', type: 'button', onclick: function(){ act({ action: 'admin_set', id: u.id, banned: false }, 'Unbanned.'); } }, 'Unban')
           : h('button', { class: 'btn small grey', type: 'button', onclick: async function(){ if (await confirmSheet('Ban ' + u.screen_name + '?', 'They’ll be kicked out and can’t log in.', 'Ban', true)) act({ action: 'admin_set', id: u.id, banned: true }, 'Banned.'); } }, 'Ban'),
         h('button', { class: 'btn small grey', type: 'button', onclick: function(){ act({ action: 'admin_set', id: u.id, verified: !u.verified }, u.verified ? 'Unverified.' : 'Verified.'); } }, u.verified ? 'Unverify' : 'Verify'),
+        h('button', { class: 'btn small grey', type: 'button', onclick: async function(){
+          if (u.founder && !(await confirmSheet('Remove ' + u.screen_name + '’s Founder perks?', 'Do this after a refund. Their badge and founder looks go away.', 'Remove', true))) return;
+          act({ action: 'admin_set', id: u.id, founder: !u.founder }, u.founder ? 'Founder perks removed.' : u.screen_name + ' is a Founder now.');
+        } }, u.founder ? 'Remove Founder' : 'Make Founder'),
         h('button', { class: 'btn small grey', type: 'button', onclick: async function(){
           if (!(await confirmSheet('Reset ' + u.screen_name + '’s password?', 'They’ll be logged out. You’ll get a temporary password to send them.', 'Reset it'))) return;
           try {
@@ -1279,7 +1337,8 @@ async function loadBoss(key){
   });
   view(h('div', null,
     h('h2', { class: 'section-title' }, 'Boss mode'),
-    h('div', { class: 'stats' }, stat(c.total, 'members'), stat(c.verified, 'verified'), stat(c.pending, 'waiting'), stat(c.online, 'online now'), stat(c.messages, 'messages'), stat(c.posts, 'posts'), stat(c.ideas || 0, 'ideas'), stat(c.banned, 'banned')),
+    h('div', { class: 'stats' }, stat(c.total, 'members'), stat(c.verified, 'verified'), stat(c.pending, 'waiting'), stat(c.online, 'online now'), stat(c.messages, 'messages'), stat(c.posts, 'posts'), stat(c.ideas || 0, 'ideas'), stat(c.banned, 'banned'), stat(c.founders || 0, 'founders'), stat('$' + Math.round((c.founder_cents || 0) / 100), 'founder sales')),
+    unmatched.length ? [h('h2', { class: 'section-title' }, 'Founder payments to match (' + unmatched.length + ')'), unmatched] : null,
     h('h2', { class: 'section-title' }, 'Waiting room (' + r.pending.length + ')'), pending,
     reports.length ? [h('h2', { class: 'section-title' }, 'Reports (' + reports.length + ')'), reports] : null,
     h('details', { class: 'more' }, h('summary', null, 'Suggestion box (' + ideas.length + ')'), h('div', null, ideas.length ? ideas : h('div', { class: 'card' }, 'No ideas yet.'))),
@@ -1328,6 +1387,7 @@ async function boot(){
   try { var r = await api('me'); S.me = r.me; }
   catch (e) { if (e.code === 'no_db' || e.code === 'db_down') return viewNoDb(); S.me = null; }
   start();
+  founderReturn();
 }
 // A pasted link can pick up a stray period or space ("#boss."), so tidy it back to #boss.
 function fixBossHash(){

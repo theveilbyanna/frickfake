@@ -3,6 +3,7 @@ import { promisify } from 'node:util';
 import { getSql, ready } from '../lib/db.js';
 import { waitlistLookup, waitlistCount, waitlistAdd, waitlistForget } from '../lib/waitlist.js';
 import { TERMS_VERSION } from '../lib/terms.js';
+import { FOUNDER_THEMES, founderOffer } from '../lib/founder.js';
 
 // FrickFake app API. Every request is POST /api/app with JSON { action, ... }.
 
@@ -15,7 +16,7 @@ const RESERVED = new Set(['admin', 'frickfake', 'support', 'moderator', 'mod', '
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/;
 const SN_RE = /^[A-Za-z0-9_.-]{3,20}$/;
 // Profile looks members can pick (the app has the colors for each one).
-const THEMES = ['classic', 'midnight', 'bubblegum', 'toxic', 'ocean', 'coffin', 'sunset', 'lavender', 'gold', 'denim'];
+const THEMES = ['classic', 'midnight', 'bubblegum', 'toxic', 'ocean', 'coffin', 'sunset', 'lavender', 'gold', 'denim', ...FOUNDER_THEMES];
 const ACCENT_RE = /^#[0-9a-f]{6}$/i;
 const PHOTO_MAX = 250000; // bytes, after the app shrinks it to 400x400
 // Same admin key as api/admin.js (only its SHA-256 is stored). FF_ADMIN_KEY in Vercel also works.
@@ -111,7 +112,8 @@ const meOut = u => ({
   id: u.id, number: u.number, screen_name: u.screen_name, email: u.email,
   city: u.city, interests: u.interests, bio: u.bio, status: u.status, away_msg: u.away_msg,
   verified: u.verified, from_waitlist: u.from_waitlist, created_at: u.created_at,
-  photo_v: pv(u), theme: u.theme || 'classic', accent: u.accent || '', song: u.song || '', top8: idList(u.top8)
+  photo_v: pv(u), theme: u.theme || 'classic', accent: u.accent || '', song: u.song || '', top8: idList(u.top8),
+  founder: Boolean(u.founder), founder_offer: u.verified && !u.founder ? founderOffer() : null
 });
 
 // Accepts Spotify, YouTube and SoundCloud links and stores a clean copy.
@@ -264,6 +266,11 @@ const PUBLIC = {
       waitlistAdd({ number: user.number, name: screen, email, city, why: '', ref: 'app', joinedAt: new Date().toISOString(), terms: TERMS_VERSION },
         { overwrite: Boolean(wl && wl.deleted) }).catch(() => {});
     }
+    // Bought the Founder Pack before making an account? Hook it up now.
+    try {
+      const paid = await sql`UPDATE ff_payments SET user_id = ${user.id} WHERE user_id IS NULL AND email = ${email} AND kind = 'founder' RETURNING session_id`;
+      if (paid.length) user = (await sql`UPDATE ff_users SET founder = TRUE, founder_at = now() WHERE id = ${user.id} RETURNING *`)[0];
+    } catch (e) { console.error('founder link-up failed', String((e && e.message) || e)); }
     await startSession(sql, ctx.res, user.id);
     return { me: meOut(user), kept_number: Boolean(keep) };
   },
@@ -312,7 +319,7 @@ const USER = {
     const id = me.id;
 
     const buddies = await sql`
-      SELECT u.id, u.number, u.screen_name, u.city, u.status, u.away_msg, GREATEST(u.photo_v, 0) AS photo_v,
+      SELECT u.id, u.number, u.screen_name, u.city, u.status, u.away_msg, GREATEST(u.photo_v, 0) AS photo_v, u.founder,
         CASE WHEN u.status = 'invisible' OR u.last_seen IS NULL OR u.last_seen < now() - interval '150 seconds'
              THEN 'offline' ELSE u.status END AS presence,
         CASE WHEN u.status = 'invisible' THEN NULL ELSE u.last_seen END AS last_seen,
@@ -322,7 +329,7 @@ const USER = {
       ORDER BY u.sn_key`;
     const buddyOut = buddies.map(x => ({
       id: x.id, number: x.number, screen_name: x.screen_name, city: x.city, presence: x.presence, photo_v: x.photo_v,
-      away_msg: x.presence === 'away' || x.presence === 'dnd' ? x.away_msg : '', last_seen: x.last_seen, unread: x.unread
+      away_msg: x.presence === 'away' || x.presence === 'dnd' ? x.away_msg : '', last_seen: x.last_seen, unread: x.unread, founder: x.founder
     }));
 
     const incoming = await sql`
@@ -384,6 +391,7 @@ const USER = {
     next.theme = me.theme || 'classic'; next.accent = me.accent || ''; next.song = me.song || ''; next.top8 = me.top8 || '';
     if (b.theme !== undefined) {
       if (!THEMES.includes(b.theme)) throw oops('Pick a look from the list.', 400, 'theme');
+      if (FOUNDER_THEMES.includes(b.theme) && !me.founder) throw oops('That look comes with the Founder Pack.', 403, 'founder');
       next.theme = b.theme;
     }
     if (b.accent !== undefined) {
@@ -634,7 +642,7 @@ const VERIFIED = {
     const before = int(b.before) || 2147483646;
     const only = int(b.user);
     const rows = await sql`
-      SELECT p.id, p.body, p.created_at, u.id AS user_id, u.number, u.screen_name, GREATEST(u.photo_v, 0) AS photo_v,
+      SELECT p.id, p.body, p.created_at, u.id AS user_id, u.number, u.screen_name, GREATEST(u.photo_v, 0) AS photo_v, u.founder,
         (SELECT COUNT(*)::int FROM ff_reacts r WHERE r.post_id = p.id) AS reals,
         EXISTS (SELECT 1 FROM ff_reacts r WHERE r.post_id = p.id AND r.user_id = ${me.id}) AS mine_real
       FROM ff_posts p JOIN ff_users u ON u.id = p.user_id
@@ -677,13 +685,13 @@ const VERIFIED = {
     const city = clean(b.city, 80);
     let rows;
     if (/^#?\d{1,9}$/.test(q)) {
-      rows = await sql`SELECT id, number, screen_name, city, interests, bio, created_at, GREATEST(photo_v, 0) AS photo_v FROM ff_users u
+      rows = await sql`SELECT id, number, screen_name, city, interests, bio, created_at, GREATEST(photo_v, 0) AS photo_v, founder FROM ff_users u
         WHERE u.number = ${Number(q.replace('#', ''))} AND u.verified AND NOT u.banned AND u.id <> ${me.id}
           AND NOT EXISTS (SELECT 1 FROM ff_blocks k WHERE (k.blocker_id = ${me.id} AND k.blocked_id = u.id) OR (k.blocker_id = u.id AND k.blocked_id = ${me.id}))`;
     } else {
       const qp = likePat(q);
       const cp = likePat(city);
-      rows = await sql`SELECT id, number, screen_name, city, interests, bio, created_at, GREATEST(photo_v, 0) AS photo_v FROM ff_users u
+      rows = await sql`SELECT id, number, screen_name, city, interests, bio, created_at, GREATEST(photo_v, 0) AS photo_v, founder FROM ff_users u
         WHERE u.verified AND NOT u.banned AND u.id <> ${me.id}
           AND NOT EXISTS (SELECT 1 FROM ff_blocks k WHERE (k.blocker_id = ${me.id} AND k.blocked_id = u.id) OR (k.blocker_id = u.id AND k.blocked_id = ${me.id}))
           AND (${q}::text = '' OR u.sn_key LIKE ${qp} OR lower(u.interests) LIKE ${qp} OR lower(u.bio) LIKE ${qp} OR lower(u.city) LIKE ${qp})
@@ -708,7 +716,7 @@ const VERIFIED = {
     const out = {
       id: u.id, number: u.number, screen_name: u.screen_name, city: u.city, interests: u.interests, bio: u.bio,
       created_at: u.created_at, rel, req_id: p ? p.id : null, blocked: bl.iBlocked,
-      photo_v: pv(u), theme: u.theme || 'classic', accent: u.accent || '', song: u.song || '', top8: []
+      photo_v: pv(u), theme: u.theme || 'classic', accent: u.accent || '', song: u.song || '', top8: [], founder: Boolean(u.founder)
     };
     const top = idList(u.top8);
     if (top.length) {
@@ -736,6 +744,7 @@ const ADMIN = {
         COUNT(*) FILTER (WHERE verified AND NOT banned)::int AS verified,
         COUNT(*) FILTER (WHERE NOT verified AND NOT banned)::int AS pending,
         COUNT(*) FILTER (WHERE banned)::int AS banned,
+        COUNT(*) FILTER (WHERE founder)::int AS founders,
         COUNT(*) FILTER (WHERE last_seen > now() - interval '150 seconds' AND NOT banned)::int AS online
       FROM ff_users`;
     const [{ messages }] = await sql`SELECT COUNT(*)::int AS messages FROM ff_messages`;
@@ -743,8 +752,12 @@ const ADMIN = {
     const pending = await sql`SELECT u.id, u.number, u.screen_name, u.email, u.city, u.interests, u.bio, u.why, u.waitlist_name,
         u.from_waitlist, u.created_at, CASE WHEN ph.data IS NULL THEN '' ELSE 'data:image/jpeg;base64,' || ph.data END AS photo
       FROM ff_users u LEFT JOIN ff_photos ph ON ph.user_id = u.id WHERE NOT u.verified AND NOT u.banned ORDER BY u.id`;
-    const members = await sql`SELECT id, number, screen_name, email, city, verified, banned, last_seen, created_at
+    const members = await sql`SELECT id, number, screen_name, email, city, verified, banned, founder, last_seen, created_at
       FROM ff_users ORDER BY number LIMIT 2000`;
+    // Founder Pack payments that didn't match an account (they paid with a different email, or before signing up).
+    const unmatched = await sql`SELECT session_id, email, amount, currency, created_at FROM ff_payments
+      WHERE user_id IS NULL ORDER BY created_at DESC LIMIT 100`;
+    const [{ cents }] = await sql`SELECT COALESCE(SUM(amount), 0)::int AS cents FROM ff_payments WHERE kind = 'founder'`;
     const reports = await sql`SELECT r.id, r.reason, r.created_at, t.id AS target_id, t.screen_name AS target_name,
         t.number AS target_number, t.banned AS target_banned, rp.screen_name AS reporter_name, rp.number AS reporter_number
       FROM ff_reports r JOIN ff_users t ON t.id = r.target_id LEFT JOIN ff_users rp ON rp.id = r.reporter_id
@@ -753,7 +766,7 @@ const ADMIN = {
         (SELECT COUNT(*)::int FROM ff_idea_votes v WHERE v.idea_id = i.id) AS votes
       FROM ff_ideas i LEFT JOIN ff_users u ON u.id = i.user_id
       ORDER BY (i.state = 'hidden'), votes DESC, i.id DESC LIMIT 300`;
-    return { counts: { ...counts, messages, posts, ideas: ideas.filter(i => i.state !== 'hidden').length }, pending, members, reports, ideas };
+    return { counts: { ...counts, messages, posts, ideas: ideas.filter(i => i.state !== 'hidden').length, founder_cents: cents }, pending, members, reports, ideas, unmatched };
   },
 
   async admin_idea(ctx) {
@@ -770,6 +783,10 @@ const ADMIN = {
     const id = int(b.id);
     if (!id) throw oops('Which member?');
     if (typeof b.verified === 'boolean') await sql`UPDATE ff_users SET verified = ${b.verified} WHERE id = ${id}`;
+    if (typeof b.founder === 'boolean') {
+      await sql`UPDATE ff_users SET founder = ${b.founder}, founder_at = CASE WHEN ${b.founder} THEN COALESCE(founder_at, now()) ELSE NULL END WHERE id = ${id}`;
+      if (!b.founder) await sql`UPDATE ff_users SET theme = 'classic' WHERE id = ${id} AND theme = ANY(${FOUNDER_THEMES})`;
+    }
     if (typeof b.banned === 'boolean') {
       await sql`UPDATE ff_users SET banned = ${b.banned} WHERE id = ${id}`;
       if (b.banned) await sql`DELETE FROM ff_sessions WHERE user_id = ${id}`;
