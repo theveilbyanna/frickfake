@@ -12,6 +12,8 @@ A social network for real people only: the old-school messenger, rebuilt.
 - `api/join.js`, `api/count.js`, `api/admin.js` – the waitlist (unchanged)
 - `lib/db.js` – database connection; creates the tables on first use
 - `lib/waitlist.js` – lets app accounts keep their waitlist number
+- `legal.html`, `terms.html`, `privacy.html`, `guidelines.html`, `copyright.html` (+ `legal.css`) – the legal pages at /legal, /terms, /privacy, /guidelines and /copyright. Sign-ups check one box that confirms they're a real human, 18+, and agree to the Terms, Guidelines and Privacy Policy; the date they agreed is saved with their account.
+- `lib/terms.js` – the date of the current Terms. If you make a big change to the legal pages, update their "Effective" date and this date to match.
 
 ## How it works
 
@@ -26,6 +28,10 @@ A social network for real people only: the old-school messenger, rebuilt.
 1. **Database:** Storage → Create Database → **Neon** (free plan) → connect it to this project. That adds `DATABASE_URL`. Tables are created automatically.
 2. **Blob store** (already used by the waitlist): keeps waitlist sign-ups. Optional for the app, but needed for members to keep their waitlist numbers.
 3. Optional: set `FF_ADMIN_KEY` to a new secret if you ever need a different admin key. The original key keeps working too.
+
+## Legal contact
+
+The legal pages list **hello@frickfake.online** for privacy requests, takedown notices and appeals. It's an email forward set up in Namecheap (Domain → Redirect Email).
 
 ## Admin
 

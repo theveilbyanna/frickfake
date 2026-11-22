@@ -50,7 +50,7 @@ async function readAll() {
         return null;
       } catch { return null; }
     }));
-    rows.push(...batch.filter(Boolean));
+    rows.push(...batch.filter(r => r && !r.deleted)); // deleted accounts leave an empty placeholder; hide it
   }
   rows.sort((a, b) => (a.number || 1e9) - (b.number || 1e9) || String(a.joinedAt).localeCompare(String(b.joinedAt)));
   return rows;

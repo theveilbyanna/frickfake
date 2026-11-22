@@ -1,0 +1,54 @@
+/* Shared look for FrickFake's legal pages: same black page, bone text and red accents as the main site, tuned for long reading on a phone. */
+:root{
+  --ink:#0d0c0b; --ink2:#1a1817; --line:#34302c;
+  --bone:#f3ece0; --muted:#b2a796; --red:#e5322b; --red-dark:#8f1712; --red-ink:#fff4ef;
+  --putty:#cdc6ba; --hi:#fffaf0; --lo:#6d665c; --shadow:#2b2724; --paper:#fffdf8;
+  --display:'Anton', Impact, 'Arial Narrow Bold', sans-serif;
+  --body:'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --pixel:'Pixelify Sans', 'Courier New', monospace;
+  --type:'Special Elite', 'Courier New', monospace;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ink);color:var(--bone);font-family:var(--body);font-size:17px;line-height:1.6;-webkit-text-size-adjust:100%}
+a{color:var(--bone);text-decoration-color:var(--red);text-underline-offset:3px;text-decoration-thickness:2px}
+a:hover{color:#fff}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.wrap{max-width:720px;margin:0 auto;padding:0 18px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 0 0;font-family:var(--type);font-size:14px;color:var(--muted)}
+.brand{font-family:var(--display);text-transform:uppercase;font-size:28px;line-height:1;color:var(--bone);text-decoration:none;display:inline-flex;gap:4px}
+.brand .fake{position:relative}
+.brand .fake::after{content:"";position:absolute;left:-6%;right:-6%;top:46%;height:.17em;background:var(--red);transform:rotate(-8deg);border-radius:3px}
+h1{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:clamp(40px,11vw,64px);line-height:.98;letter-spacing:.01em;margin:28px 0 6px}
+.eff{font-family:var(--type);color:var(--muted);font-size:14px;margin:0 0 18px}
+h2{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:26px;line-height:1.1;letter-spacing:.01em;margin:34px 0 8px;color:var(--bone)}
+h2 .n{color:var(--red);margin-right:6px}
+h3{font-size:18px;margin:22px 0 4px}
+p,li{color:#e6ddcf}
+ul,ol{padding-left:22px}
+li{margin:4px 0}
+strong{color:var(--bone)}
+.tldr{background:var(--putty);color:var(--ink);border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);box-shadow:inset -2px -2px 0 var(--lo),inset 2px 2px 0 #e9e3d8,6px 6px 0 var(--red);padding:3px;margin:8px 0 26px}
+.tldr .bar{background:linear-gradient(90deg,var(--red-dark),var(--red));color:var(--red-ink);padding:4px 8px;font-family:var(--pixel);font-weight:700;font-size:15px}
+.tldr .pane{background:var(--paper);margin:2px;padding:12px 14px;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo)}
+.tldr p,.tldr li{color:#2b2724;font-size:16px;margin:6px 0}
+.tldr strong{color:var(--ink)}
+.tldr a{color:var(--ink)}
+.tldr ul{margin:4px 0}
+.caps{text-transform:uppercase;font-size:15px;letter-spacing:.01em}
+.box{border:1px solid var(--line);background:var(--ink2);padding:12px 14px;margin:12px 0}
+.toc{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
+.toc a{display:inline-block;border:1px solid var(--line);padding:6px 10px;text-decoration:none;font-family:var(--pixel);font-weight:700;font-size:15px;color:var(--bone);background:var(--ink2)}
+.toc a[aria-current]{background:var(--red);border-color:var(--red);color:var(--red-ink)}
+.cards{list-style:none;padding:0;display:grid;gap:12px;margin:18px 0}
+.cards a{display:block;text-decoration:none;border:1px solid var(--line);background:var(--ink2);padding:14px}
+.cards b{display:block;font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:24px;letter-spacing:.01em}
+.cards span{display:block;color:var(--muted);font-size:15px;margin-top:2px}
+footer{border-top:1px solid var(--line);margin:44px 0 0;padding:22px 0 36px;color:var(--muted);font-size:14px;display:flex;flex-direction:column;gap:8px}
+footer nav{display:flex;flex-wrap:wrap;gap:6px 14px}
+footer nav a{color:var(--muted)}
+@media print{
+  html,body{background:#fff;color:#000}
+  p,li,h1,h2,h3,strong{color:#000}
+  .top,.toc,footer nav{display:none}
+}

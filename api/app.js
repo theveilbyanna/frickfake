@@ -1,7 +1,8 @@
 import { scrypt as scryptCb, randomBytes, timingSafeEqual, createHash } from 'node:crypto';
 import { promisify } from 'node:util';
 import { getSql, ready } from '../lib/db.js';
-import { waitlistLookup, waitlistCount, waitlistAdd } from '../lib/waitlist.js';
+import { waitlistLookup, waitlistCount, waitlistAdd, waitlistForget } from '../lib/waitlist.js';
+import { TERMS_VERSION } from '../lib/terms.js';
 
 // FrickFake app API. Every request is POST /api/app with JSON { action, ... }.
 
@@ -216,7 +217,8 @@ const PUBLIC = {
     const pw = String(b.password ?? '');
     if (pw.length < 8) throw oops('Make your password at least 8 characters.', 400, 'password');
     if (pw.length > 200) throw oops('That password is too long.', 400, 'password');
-    if (b.human !== true) throw oops('Check the box to confirm you’re a real human.', 400, 'human');
+    // The box confirms they're a real human, 18 or older, and agree to the Terms, Guidelines and Privacy Policy.
+    if (b.human !== true) throw oops('Check the box to confirm you’re a real human, 18 or older, and OK with the Terms.', 400, 'human');
     const city = clean(b.city, 80);
     const interests = clean(b.interests, 200);
 
@@ -243,9 +245,9 @@ const PUBLIC = {
       }
       try {
         const rows = await sql`INSERT INTO ff_users
-            (number, screen_name, sn_key, email, pass_hash, city, interests, from_waitlist, waitlist_name, why)
+            (number, screen_name, sn_key, email, pass_hash, city, interests, from_waitlist, waitlist_name, why, terms_at, terms_v)
           VALUES (${n}, ${screen}, ${screen.toLowerCase()}, ${email}, ${passHash}, ${city || clean(wl && wl.city, 80)}, ${interests},
-                  ${Boolean(keep)}, ${clean(wl && wl.name, 60)}, ${clean(wl && wl.why, 500)})
+                  ${Boolean(keep)}, ${clean(wl && wl.name, 60)}, ${clean(wl && wl.why, 500)}, now(), ${TERMS_VERSION})
           RETURNING *`;
         user = rows[0];
       } catch (e) {
@@ -258,8 +260,9 @@ const PUBLIC = {
     }
     if (!user) throw oops('Couldn’t hand out a number just now. Try again in a minute.', 500, 'number');
 
-    if (!wl) {
-      waitlistAdd({ number: user.number, name: screen, email, city, why: '', ref: 'app', joinedAt: new Date().toISOString() }).catch(() => {});
+    if (!wl || wl.deleted) {
+      waitlistAdd({ number: user.number, name: screen, email, city, why: '', ref: 'app', joinedAt: new Date().toISOString(), terms: TERMS_VERSION },
+        { overwrite: Boolean(wl && wl.deleted) }).catch(() => {});
     }
     await startSession(sql, ctx.res, user.id);
     return { me: meOut(user), kept_number: Boolean(keep) };
@@ -444,6 +447,8 @@ const USER = {
     const { sql, me, body: b } = ctx;
     if (!(await checkPw(String(b.password ?? ''), me.pass_hash))) throw oops('That password isn’t right.', 400, 'password');
     await sql`DELETE FROM ff_users WHERE id = ${me.id}`;
+    // Also erase their waitlist sign-up, as the Privacy Policy promises.
+    try { await waitlistForget(me.email); } catch (e) { console.error('waitlist erase failed', String((e && e.message) || e)); }
     clearSessionCookie(ctx.res);
     return {};
   },

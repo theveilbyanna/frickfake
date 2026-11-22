@@ -79,6 +79,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .btn.grey{background:var(--putty);color:var(--ink);border-color:var(--hi) var(--shadow) var(--shadow) var(--hi)}
 .err{color:#a5140d;font-weight:700;font-size:14px;margin:0 0 10px}
 .privacy{font-size:13px;color:#4f4942;margin:12px 0 0}
+.check a,.privacy a{color:var(--ink);text-decoration-color:var(--red);text-underline-offset:2px}
 .status-line{display:flex;align-items:center;gap:8px;border-top:2px solid;border-color:var(--lo);margin:14px -14px -14px;padding:6px 10px;font-family:var(--pixel);font-size:14px;background:#c3bcaf;box-shadow:inset 0 1px 0 var(--hi)}
 .status-line i{width:10px;height:10px;border-radius:50%;background:var(--on);flex:none}
 
@@ -129,6 +130,7 @@ section > h2{font-family:var(--display);font-weight:400;text-transform:uppercase
 .faq p{margin:0 0 14px;color:var(--muted)}
 .cta2{margin:30px 0 0}
 footer{padding:40px 0 34px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:6px}
+footer .legal{display:flex;flex-wrap:wrap;gap:4px 14px}footer a{color:var(--muted)}
 footer .brand{font-family:var(--display);font-size:22px;color:var(--bone);text-transform:uppercase;letter-spacing:.02em}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--putty);color:var(--ink);font-family:var(--pixel);font-weight:700;padding:10px 16px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);box-shadow:4px 4px 0 var(--red)}
 .toast.show{opacity:1}
@@ -160,10 +162,10 @@ footer .brand{font-family:var(--display);font-size:22px;color:var(--bone);text-t
         <div class="field"><label for="city">City <span class="opt">(optional)</span></label><input id="city" name="city" autocomplete="address-level2" maxlength="80"></div>
         <div class="field"><label for="why">What made you quit fake social media? <span class="opt">(optional)</span></label><textarea id="why" name="why" maxlength="500"></textarea></div>
         <div class="hp" aria-hidden="true"><label for="website">Leave this empty</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
-        <label class="check" for="human"><input type="checkbox" id="human" name="human"><span>I’m a real human, and I’m cool with proving it.</span></label>
+        <label class="check" for="human"><input type="checkbox" id="human" name="human"><span>I’m a real human, I’m 18 or older, and I agree to the <a href="/terms" target="_blank" rel="noopener">Terms</a>, <a href="/guidelines" target="_blank" rel="noopener">Community Guidelines</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
         <p class="err" id="err" role="alert"></p>
         <button class="btn" type="submit" id="submit">Get my number</button>
-        <p class="privacy">We’ll only email you about FrickFake. We never sell or share your info.</p>
+        <p class="privacy">We’ll only email you about FrickFake. We never sell or share your info. <a href="/privacy">Privacy Policy</a></p>
       </form>
       <div class="done" id="done" hidden>
         <h2 id="done-title">You’re in.</h2>
@@ -222,9 +224,9 @@ footer .brand{font-family:var(--display);font-size:22px;color:var(--bone);text-t
       <details><summary>Can I suggest features?</summary><p>Yes, please. Every member gets the suggestion box, even while you wait to be verified. Drop an idea, vote on others, and we build the top ones. <a href="/app#ideas">Open the suggestion box</a></p></details>
       <details><summary>What’s my number for?</summary><p>It’s your FrickFake ID, like the old messengers. People can add you by your number or your screen name, and a low number shows you were here early.</p></details>
       <details><summary>Why “Frick”?</summary><p>Because app stores don’t love the other word. You know what we mean.</p></details>
-      <details><summary>How do you know I’m real?</summary><p>A real person checks every new member before they can add or message anyone, plus the rule that nobody can add you without your OK. No bots, no fake profiles, no scam accounts.</p></details>
-      <details><summary>Who’s it for?</summary><p>Anyone who misses when the internet felt like real people. Punks, freaks, weirdos, parents, grandmas. If you’re real, you’re in.</p></details>
-      <details><summary>What do you do with my email?</summary><p>We email you when FrickFake opens, and that’s it. We never sell or share it.</p></details>
+      <details><summary>How do you know I’m real?</summary><p>A real person checks every new member before they can add or message anyone, plus the rule that nobody can add you without your OK. That’s how we keep bots, fake profiles and scam accounts out. It’s not a background check, so still use your street smarts.</p></details>
+      <details><summary>Who’s it for?</summary><p>Anyone 18 or older who misses when the internet felt like real people. Punks, freaks, weirdos, parents, grandmas. If you’re real and 18+, you’re in.</p></details>
+      <details><summary>What do you do with my email?</summary><p>We use it for your FrickFake account and to email you about FrickFake, and that’s it. We never sell or share it. Details are in our <a href="/privacy">Privacy Policy</a>.</p></details>
     </div>
     <div class="cta2"><a class="btn" href="#join">Get my number</a></div>
   </section>
@@ -232,7 +234,9 @@ footer .brand{font-family:var(--display);font-size:22px;color:var(--bone);text-t
   <footer>
     <span class="brand">FrickFake</span>
     <span>Real people only. A Digital Outlaw project.</span>
-    <span>© 2026 FrickFake</span>
+    <nav class="legal" aria-label="Legal"><a href="/terms">Terms</a> <a href="/privacy">Privacy</a> <a href="/guidelines">Guidelines</a> <a href="/copyright">Copyright</a> <a href="/legal">Legal &amp; safety</a></nav>
+    <span>18+ only. “Verified” means a real person reviewed the sign-up. It’s not a background check.</span>
+    <span>© 2026 FrickFake · <a href="mailto:hello@frickfake.online">hello@frickfake.online</a></span>
   </footer>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -263,7 +267,7 @@ footer .brand{font-family:var(--display);font-size:22px;color:var(--bone);text-t
     var name = $('name').value.trim(), email = $('email').value.trim();
     if (!name) { err.textContent = 'Add your first name or screen name.'; $('name').focus(); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { err.textContent = 'That email doesn’t look right. Check it and try again.'; $('email').focus(); return; }
-    if (!$('human').checked) { err.textContent = 'Check the box to confirm you’re a real human.'; return; }
+    if (!$('human').checked) { err.textContent = 'Check the box to confirm you’re a real human, 18 or older, and OK with the Terms.'; return; }
     var btn = $('submit'); btn.disabled = true; btn.textContent = 'Getting your number…';
     fetch('/api/join', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },

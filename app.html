@@ -182,6 +182,8 @@ details.more > div{padding:0 12px 12px}
 .stat span{font-size:13px;color:var(--muted)}
 .tag{display:inline-block;font-family:var(--pixel);font-size:12px;padding:1px 6px;border:1px solid currentColor;margin-left:6px}
 .tag.ok{color:#1f7a29}.tag.wait{color:#9a6a00}.tag.bad{color:#a5140d}
+.legalnav{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;font-family:var(--type);font-size:13px;color:var(--muted);margin:0 0 24px}
+.legalnav a{color:var(--muted)}
 .home{display:block;text-align:center;font-family:var(--type);color:var(--muted);font-size:14px;margin:6px 0 20px}
 .toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--putty);color:var(--ink);font-family:var(--pixel);font-weight:700;padding:10px 16px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;border:2px solid;border-color:var(--hi) var(--shadow) var(--shadow) var(--hi);box-shadow:4px 4px 0 var(--red);max-width:92vw;text-align:center}
 .toast.show{opacity:1}
@@ -348,6 +350,10 @@ function win(title, body, o){
 function field(label, input, optional, hint){
   var id = 'f' + (++fid); input.id = id;
   return h('div', { class: 'field' }, h('label', { for: id }, label, optional ? h('span', { class: 'opt' }, ' (optional)') : null), input, hint ? h('span', { class: 'opt', style: 'font-size:13px' }, hint) : null);
+}
+function legalLinks(){
+  var a = function(href, t){ return h('a', { href: href, target: '_blank', rel: 'noopener' }, t); };
+  return h('nav', { class: 'legalnav', 'aria-label': 'Legal' }, a('/terms', 'Terms'), a('/privacy', 'Privacy'), a('/guidelines', 'Guidelines'), a('/copyright', 'Copyright'), a('/legal', 'Legal & safety'));
 }
 function checkbox(input, text){ var id = 'f' + (++fid); input.id = id; return h('label', { class: 'check', for: id }, input, h('span', null, text)); }
 var tt;
@@ -516,7 +522,7 @@ function viewAuth(mode, msg){
         if (!/^[A-Za-z0-9_.-]{3,20}$/.test(s) || !/[A-Za-z]/.test(s)) { err.textContent = 'Screen names are 3 to 20 letters, numbers, dots, dashes or underscores.'; sn.focus(); return; }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m)) { err.textContent = 'That email doesn’t look right.'; em.focus(); return; }
         if (pw.value.length < 8) { err.textContent = 'Make your password at least 8 characters.'; pw.focus(); return; }
-        if (!human.checked) { err.textContent = 'Check the box to confirm you’re a real human.'; return; }
+        if (!human.checked) { err.textContent = 'Check the box to confirm you’re a real human, 18 or older, and OK with the Terms.'; return; }
         busy(btn, 'Getting your number…', async function(){
           try {
             var r = await api('signup', { screen_name: s, email: m, password: pw.value, city: city.value, interests: ints.value, human: true, website: hp.value });
@@ -536,9 +542,12 @@ function viewAuth(mode, msg){
       field('City', city, true),
       field('Interests', ints, true, 'Helps your kind of weird find you.'),
       h('div', { class: 'hp', 'aria-hidden': 'true' }, field('Leave this empty', hp)),
-      checkbox(human, 'I’m a real human, and I’m cool with a real person checking before I can add anyone.'),
+      checkbox(human, ['I’m a real human, I’m 18 or older, I’m cool with a real person checking before I can add anyone, and I agree to the ',
+        h('a', { href: '/terms', target: '_blank', rel: 'noopener' }, 'Terms'), ', ',
+        h('a', { href: '/guidelines', target: '_blank', rel: 'noopener' }, 'Community Guidelines'), ' and ',
+        h('a', { href: '/privacy', target: '_blank', rel: 'noopener' }, 'Privacy Policy'), '.']),
       err, btn,
-      h('p', { class: 'note' }, 'We never sell or share your info.'));
+      h('p', { class: 'note' }, 'We never sell or share your info. ', h('a', { href: '/privacy', target: '_blank', rel: 'noopener' }, 'Privacy Policy')));
   } else {
     var lg = h('input', { autocomplete: 'username', autocapitalize: 'off', spellcheck: 'false', maxlength: '254', value: q.get('email') || '' });
     var lpw = h('input', { type: 'password', autocomplete: 'current-password', maxlength: '200' });
@@ -569,7 +578,8 @@ function viewAuth(mode, msg){
     win(isNew ? 'New here' : 'Log in', [sw, form]),
     h('div', { class: 'win poster' }, h('div', { class: 'bar' }, h('span', { class: 'ttl' }, 'built_by_hard_times.jpg'), h('span', { class: 'ctl', 'aria-hidden': 'true' }, h('span', null, '_'), h('span', null, '×'))),
       h('div', { class: 'pane' }, h('img', { src: '/founder.jpg', width: '900', height: '963', loading: 'lazy', alt: 'FrickFake poster: Built by hard times, powered by pure grit. I don’t break, I rebuild. And I don’t need anybody’s approval to know my worth.' }))),
-    h('a', { class: 'home', href: '/' }, '← What is FrickFake?')
+    h('a', { class: 'home', href: '/' }, '← What is FrickFake?'),
+    legalLinks()
   ), { notabs: true });
 }
 
@@ -1166,7 +1176,8 @@ function tabMe(){
         try { await api('delete_account', { password: delPw.value }); S.me = null; store('ff_known', null); viewAuth('new', 'Your account was deleted. Take care out there.'); }
         catch (ex) { toast(ex.message); }
       });
-    } }, h('p', { class: 'sub', style: 'margin-top:0' }, 'This erases your number, buddies, messages and posts.'), field('Type your password to confirm', delPw), delBtn)))
+    } }, h('p', { class: 'sub', style: 'margin-top:0' }, 'This erases your number, buddies, messages and posts.'), field('Type your password to confirm', delPw), delBtn))),
+    legalLinks()
   ));
 }
 function share(){
